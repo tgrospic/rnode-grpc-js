@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+
+const { run } = require('../dist/cli')
+
+run({
+  args: process.argv.slice(2),
+  cwd: process.cwd(),
+})

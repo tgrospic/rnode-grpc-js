@@ -1,0 +1,62 @@
+{
+  "name": "@tgrospic/rnode-grpc-js",
+  "version": "0.0.1",
+  "description": "RNode gRPC helpers",
+  "author": "Tomislav Grospic",
+  "license": "MIT",
+  "main": "dist/cli",
+  "scripts": {
+    "build": "babel src -d dist",
+    "cli": "npm-run-all clean build",
+    "clean": "rimraf -f dist"
+  },
+  "bin": {
+    "rnode-grpc": "bin/rnode-grpc"
+  },
+  "keywords": [
+    "rchain",
+    "grpc",
+    "protobuf",
+    "javascript",
+    "js",
+    "rnode",
+    "rholang"
+  ],
+  "dependencies": {
+    "@babel/runtime": "^7.5.5",
+    "core-js": "^3.2.1",
+    "fs-extra": "^8.1.0",
+    "ramda": "^0.26.1",
+    "request": "^2.88.0",
+    "stat-mode": "^0.3.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.5.5",
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-transform-runtime": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "grpc-tools": "^1.8.0",
+    "npm-run-all": "^4.1.5",
+    "protobufjs": "^6.8.8",
+    "rimraf": "^3.0.0"
+  },
+  "peerDependencies": {
+    "grpc-tools": "^1.8.0",
+    "protobufjs": "^6.8.8"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "useBuiltIns": "usage",
+          "corejs": 3,
+          "shippedProposals": true
+        }
+      ]
+    ]
+  },
+  "files": [
+    "dist"
+  ]
+}
