@@ -1,14 +1,15 @@
 {
   "name": "@tgrospic/rnode-grpc-js",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "RNode gRPC helpers",
   "repository": "github:tgrospic/rnode-grpc-js",
   "author": "Tomislav Grospic",
   "license": "MIT",
-  "main": "dist/cli",
+  "main": "dist/index.js",
   "scripts": {
     "build": "babel src -d dist",
-    "cli": "npm-run-all clean build",
+    "publish": "npm-run-all clean build _publish",
+    "_publish": "npm publish --access public",
     "clean": "rimraf -f dist"
   },
   "bin": {
