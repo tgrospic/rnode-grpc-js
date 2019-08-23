@@ -1,6 +1,6 @@
 {
   "name": "@tgrospic/rnode-grpc-js",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "RNode gRPC helpers",
   "repository": "github:tgrospic/rnode-grpc-js",
   "author": "Tomislav Grospic",
@@ -26,6 +26,7 @@
   ],
   "dependencies": {
     "@babel/runtime": "^7.5.5",
+    "blakejs": "^1.1.0",
     "core-js": "^3.2.1",
     "fs-extra": "^8.1.0",
     "ramda": "^0.26.1",

@@ -19,25 +19,32 @@ const init = ({protoSchema}) => {
 }
 
 const resolveEither = eitherMsg => {
-  const {value: valBytes, typeUrl} = eitherMsg.toObject().success.response
-  const [_, type] = typeUrl.match(/^type.rchain.coop\/(.+)$/)
-  const propPath = type.split('.')
-  const propLens = R.map(R.lensProp, propPath)
-  const typeLens = R.compose(...propLens)
-  const typeDef = R.view(typeLens, proto)
+  const { success, error } = eitherMsg.toObject()
+  if (success) {
+    const {value: valBytes, typeUrl} = success.response
+    const [_, type] = typeUrl.match(/^type.rchain.coop\/(.+)$/)
+    const propPath = type.split('.')
+    const propLens = R.map(R.lensProp, propPath)
+    const typeLens = R.compose(...propLens)
+    const typeDef = R.view(typeLens, proto)
 
-  return typeDef.deserializeBinary(valBytes).toObject()
+    return typeDef.deserializeBinary(valBytes).toObject()
+  } else if (error) {
+    const { messagesList } = error
+
+    throw Error(`Either error: ${messagesList.join(', ')}`)
+  }
 }
 
 const fillObject = R.curry((getType, getTypeConstructor, reqTypeName, input) => {
   const msgConstructor = getTypeConstructor(reqTypeName)
-  !msgConstructor && warn('Request type not found', reqTypeName)
+  !msgConstructor && warn('Request type not found:', reqTypeName)
   const req = new msgConstructor()
   Object.entries(input || {}).forEach(([k, v]) => {
     const typeDef = getType(reqTypeName)
     const genKey = k.replace(/_(\S)/g, (_, x) => x.toUpperCase())
     const field = typeDef.fields[genKey]
-    !field && warn(`Property not found ${reqTypeName}.${k}`)
+    !field && warn(`Property not found: ${reqTypeName}.${k}`)
 
     // Handle collections (proto repeated)
     const isListType = field.rule === 'repeated'
@@ -53,7 +60,7 @@ const fillObject = R.curry((getType, getTypeConstructor, reqTypeName, input) => 
 
     // Create property value / recursively resolve complex types
     const val =
-      ~['bool', 'int32', 'sint64', 'string', 'bytes'].indexOf(field.type)
+      ~['bool', 'int32', 'int64', 'sint64', 'string', 'bytes'].indexOf(field.type)
         // Simple type
         ? v
         // Complex type
@@ -73,25 +80,34 @@ const createApiMethod = R.curry((service, name, method, getType, getTypeConstruc
   const isReponseStream = !!method.responseStream
   const req = fillObject(getType, getTypeConstructor, method.requestType, input)
 
+  // Get service method
+  const lowerize = ([h, ...t]) => `${h.toLowerCase()}${t.join('')}`
+  const sm = service[name] || service[lowerize(name)]
+  !sm && warn('Service method not found:', name)
+  const serviceMethod = sm.bind(service)
+
   if (isReponseStream) {
-    const call = service[name](req, meta)
+    const call = serviceMethod(req, meta)
     const streamResult = []
-    call.on('data', resultMsg => {
-      const result = resolveEither(resultMsg)
-      streamResult.push(result)
-    })
     return new Promise(resolve => {
+      call.on('data', resultMsg => {
+        try {
+          const result = resolveEither(resultMsg)
+          streamResult.push(result)
+        } catch (err) { reject(err) }
+      })
       call.on('end', _ => { resolve(streamResult) })
     })
   } else {
     return new Promise((resolve, reject) => {
-      service[name](req, null, (err, resultMsg) => {
+      serviceMethod(req, meta, (err, resultMsg) => {
         if (err) reject(err)
         else {
-          // Resolve Either value
-          // TODO: handle Either error
-          const result = resolveEither(resultMsg)
-          resolve(result)
+          try {
+            // Resolve Either value
+            const result = resolveEither(resultMsg)
+            resolve(result)
+          } catch (err) { reject(err) }
         }
       })
     })
