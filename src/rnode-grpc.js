@@ -1,4 +1,5 @@
 import * as R from 'ramda'
+import { protoTsTypesMapping } from './lib'
 
 const { log, warn } = console
 
@@ -36,6 +37,8 @@ const resolveEither = eitherMsg => {
   }
 }
 
+const simpleTypes = R.map(R.prop('proto'), protoTsTypesMapping)
+
 const fillObject = R.curry((getType, getTypeConstructor, reqTypeName, input) => {
   const msgConstructor = getTypeConstructor(reqTypeName)
   !msgConstructor && warn('Request type not found:', reqTypeName)
@@ -60,7 +63,7 @@ const fillObject = R.curry((getType, getTypeConstructor, reqTypeName, input) => 
 
     // Create property value / recursively resolve complex types
     const val =
-      ~['bool', 'int32', 'int64', 'sint64', 'string', 'bytes'].indexOf(field.type)
+      ~simpleTypes.indexOf(field.type)
         // Simple type
         ? v
         // Complex type

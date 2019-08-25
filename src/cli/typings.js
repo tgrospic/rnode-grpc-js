@@ -1,6 +1,7 @@
 import fs from 'fs-extra'
 import path from 'path'
 import * as R from 'ramda'
+import { protoTsTypesMapping } from '../lib'
 
 const { log } = console
 
@@ -34,13 +35,6 @@ const readProto = protoPath => R.pipeWith(then, [
   filterAsync(isFile),
   mapAsync(R.flip(readFile)('utf8')),
 ])(protoPath)
-
-const simpleTypesMapping = [
-  { proto: 'bool', ts: 'Boolean' }, { proto: 'string', ts: 'String' },
-  { proto: 'int32', ts: 'Number' }, { proto: 'sint32', ts: 'Number' },
-  { proto: 'int64', ts: 'Number | Long' }, { proto: 'sint64', ts: 'Number | Long' },
-  { proto: 'float', ts: 'Number' }, { proto: 'bytes', ts: 'Uint8Array' }
-]
 
 // Parse service name
 const serviceRegex = /service\s+([a-zA-Z0-9_-]+)/
@@ -80,11 +74,11 @@ export const generateTs = async ({jsPath, protoPath, protoSchema}) => {
   const generateServices = R.map(serviceCodeGen)
 
   // Type helpers
-  const simpleTypes = R.map(R.prop('proto'), simpleTypesMapping)
+  const simpleTypes = R.map(R.prop('proto'), protoTsTypesMapping)
   // TODO: add support to generate nested types
   const nestedTypes = ['WildcardMsg']
   const isSimpleType = type => R.contains(type, [...simpleTypes, ...nestedTypes])
-  const getTsType = protoType => R.find(x => x.proto === protoType, simpleTypesMapping)
+  const getTsType = protoType => R.find(x => x.proto === protoType, protoTsTypesMapping)
 
   // Generates code for type interface
   const typeCodeGen = ({name, fields, nested}) => {
