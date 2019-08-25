@@ -143,7 +143,7 @@ Sample static site to test requests from the browser
 
 #### Proxy address pattern:
 
-gRPC `node{0-n}.NETWORK.rchain-dev.tk:40401`
+gRPC `node{0-n}.NETWORK.rchain-dev.tk:40401`  
 HTTP `https://NETWORK-{0-n}.grpc.rchain.isotypic.com`
 
 ### testnet
