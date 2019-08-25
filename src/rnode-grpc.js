@@ -74,7 +74,7 @@ const fillObject = R.curry((getType, getTypeConstructor, reqTypeName, input) => 
   return req
 })
 
-const createApiMethod = R.curry((service, name, method, getType, getTypeConstructor) => async (input, meta) => {
+const createApiMethod = R.curry((service, getType, getTypeConstructor, method, name) => async (input, meta) => {
   // const reqType = casperTypes[method.requestType]
   // const respType = casperTypes[method.responseType]
   const isReponseStream = !!method.responseStream
@@ -114,8 +114,16 @@ const createApiMethod = R.curry((service, name, method, getType, getTypeConstruc
   }
 })
 
-export const rnodeClient = (service, opt) => {
+export const rnodeService = (service, opt) => {
   const {getType, getTypeConstructor, methods} = init(opt)
 
-  return R.mapObjIndexed((method, k) => createApiMethod(service, k, method, getType, getTypeConstructor), methods)
+  // Create RNode service API from proto definition
+  return R.mapObjIndexed(
+    createApiMethod(service, getType, getTypeConstructor),
+    methods,
+  )
 }
+
+// Different name for each service to support Typescript definitions
+export const rnodeDeploy  = rnodeService
+export const rnodePropose = rnodeService

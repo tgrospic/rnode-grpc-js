@@ -5,6 +5,7 @@ import Mode from 'stat-mode'
 import * as R from 'ramda'
 import { parseArgs } from './args'
 import { downloadAll } from './download'
+import { generateTs } from './typings'
 
 const { log, error } = console
 
@@ -24,7 +25,7 @@ const getProtoFilePaths = protoPath => R.pipe(
   R.map(x => path.resolve(protoPath, `${x}.proto`)),
 )
 
-const generateJsPb = ({jsPath, protoPath, binPath}) => {
+const generateJsPb = async ({jsPath, protoPath, binPath}) => {
   const npmBin = 'node_modules/.bin'
   const protoc = path.resolve(npmBin, 'grpc_tools_node_protoc')
   const protocPlugin = path.resolve(npmBin, 'grpc_tools_node_protoc_plugin')
@@ -40,20 +41,32 @@ const generateJsPb = ({jsPath, protoPath, binPath}) => {
     `${protoPath}/scalapb/scalapb.proto`,
     ...protoFiles,
   ]
-  spawn(protoc, args, {stdio: 'inherit'})
+  const protocExe = spawn(protoc, args, {stdio: 'inherit'})
+
+  return waitExit(protocExe, null, `Failed to generate JS files with grpc-tools.`)
 }
 
-const generateJsonPb = ({jsPath, protoPath}) => {
+const generateJsonPb = async ({jsPath, protoPath}) => {
   const npmBin = 'node_modules/.bin'
   const pbjs = path.resolve(npmBin, 'pbjs')
+  const jsonPath = `${jsPath}/pbjs_generated.json`
   const args = [
     `-t`, `json`,
-    `-o`, `${jsPath}/pbjs_generated.json`,
+    `-o`, jsonPath,
     `${protoPath}/scalapb/*.proto`,
     `${protoPath}/*.proto`
   ]
-  spawn(pbjs, args, {stdio: 'inherit'})
+  const pbExe = spawn(pbjs, args, {stdio: 'inherit'})
+
+  return waitExit(pbExe, jsonPath, `Failed to generate JSON schema with pbjs.`)
 }
+
+const waitExit = (proc, result, error) =>
+  new Promise((resolve, reject) => {
+    proc.on('exit', code => {
+      code === 0 ? resolve(result) : reject(error)
+    })
+  })
 
 export const run = async ({args, cwd}) => {
   // Input options
@@ -127,8 +140,16 @@ export const run = async ({args, cwd}) => {
   log(blue('Generating JS files...'))
 
   // Generate JS code from proto files (with grpc-tools)
-  generateJsPb({jsPath, protoPath, binPath})
+  await generateJsPb({jsPath, protoPath, binPath})
 
   // Generate JSON definition from proto files (with protobufjs)
-  generateJsonPb({jsPath, protoPath})
+  const jsonPath = await generateJsonPb({jsPath, protoPath})
+
+  // Load generated pbjs JSON schema
+  const protoSchema = require(jsonPath)
+
+  log(blue('Generating Typescript definitions...'))
+
+  // Generate Typescript definitions
+  await generateTs({jsPath, protoPath, protoSchema})
 }
