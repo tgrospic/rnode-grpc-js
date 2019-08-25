@@ -25,10 +25,12 @@ const getProtoFilePaths = protoPath => R.pipe(
   R.map(x => path.resolve(protoPath, `${x}.proto`)),
 )
 
+const ext = process.platform === 'win32' ? '.cmd' : ''
+
 const generateJsPb = async ({jsPath, protoPath, binPath}) => {
   const npmBin = 'node_modules/.bin'
-  const protoc = path.resolve(npmBin, 'grpc_tools_node_protoc')
-  const protocPlugin = path.resolve(npmBin, 'grpc_tools_node_protoc_plugin')
+  const protoc = path.resolve(npmBin, `grpc_tools_node_protoc${ext}`)
+  const protocPlugin = path.resolve(npmBin, `grpc_tools_node_protoc_plugin${ext}`)
 
   const protoFiles = getProtoFilePaths(protoPath)(proto0_9_12)
   const args = [
@@ -48,7 +50,7 @@ const generateJsPb = async ({jsPath, protoPath, binPath}) => {
 
 const generateJsonPb = async ({jsPath, protoPath}) => {
   const npmBin = 'node_modules/.bin'
-  const pbjs = path.resolve(npmBin, 'pbjs')
+  const pbjs = path.resolve(npmBin, `pbjs${ext}`)
   const jsonPath = `${jsPath}/pbjs_generated.json`
   const args = [
     `-t`, `json`,
