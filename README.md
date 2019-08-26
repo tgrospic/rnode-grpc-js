@@ -5,12 +5,12 @@ This library helps to generate **JavaScript** bindings for **RNode gRPC** protoc
 Examples of how to use it with **Nodejs** and in the **browser** are in [@tgrospic/rnode-client-js](https://github.com/tgrospic/rnode-client-js) repo.
 
 #### It contains two parts:
-- `rnode-grpc` CLI to generate JS files with **Typescript definitions**
+- `rnode-grpc` CLI to generate JS files with **TypeScript definitions**
 - helper functions to create **JS client** with **Promise** based **RNode** service methods.
 
 ### TypeScript definitions
 
-Here is an exapmle of TS definition of **`DeployService`** generated for `v0.9.12` version of RNode.
+Here is an example of TS definition of **`DeployService`** generated for `v0.9.12` version of RNode.
 
 ```sh
 # Run CLI command with an option to specify RNode version (Git repo release tag)
@@ -38,7 +38,7 @@ interface DeployService {
 
 ### Sample code for how to make requests to RNode in the browser
 
-Code assumes running proxy to convert gRPC to HTTP requests. At the bottom of the page is the [list of exposed proxies](#available-proxies-for-testnet-devnet-and-sandboxnet) to RChain **testnet**, **devnet** and **sandboxnet**.
+Code assumes running proxy to convert gRPC to HTTP requests. At the bottom of the page is the [list of exposed proxies](#available-proxies-for-testnet) to RChain **testnet**.
 
 Working version of this example can be found here [@tgrospic/rnode-client-js/src/web/index.js](https://github.com/tgrospic/rnode-client-js/blob/master/src/web/index.js).
 
@@ -136,7 +136,7 @@ interface DeployService {
 
 The main difference is that this library does not depend on any specific version of RNode nor the schema definition (with minor caveats). RNode version is an input parameter and the goal is to generate JS code for any RNode version.
 
-## Available proxies for _testnet_, _devnet_ and _sandboxnet_
+## Available proxies for _testnet_
 
 Sample static site to test requests from the browser
 [https://tgrospic.github.io/rnode-client-js](https://tgrospic.github.io/rnode-client-js). It's published as part of the example repository [@tgrospic/rnode-client-js](https://github.com/tgrospic/rnode-client-js).
@@ -160,23 +160,3 @@ HTTP `https://NETWORK-{0-n}.grpc.rchain.isotypic.com`
 | node7.testnet.rchain-dev.tk:40401 | https://testnet-7.grpc.rchain.isotypic.com
 | node8.testnet.rchain-dev.tk:40401 | https://testnet-8.grpc.rchain.isotypic.com
 | node9.testnet.rchain-dev.tk:40401 | https://testnet-9.grpc.rchain.isotypic.com
-
-### devnet
-
-| gRPC                              | HTTP
-|:---------------------------------:|:-----------------------------------------:
-| node0.devnet.rchain-dev.tk:40401  | https://devnet-0.grpc.rchain.isotypic.com
-| node1.devnet.rchain-dev.tk:40401  | https://devnet-1.grpc.rchain.isotypic.com
-| node2.devnet.rchain-dev.tk:40401  | https://devnet-2.grpc.rchain.isotypic.com
-| node3.devnet.rchain-dev.tk:40401  | https://devnet-3.grpc.rchain.isotypic.com
-| node4.devnet.rchain-dev.tk:40401  | https://devnet-4.grpc.rchain.isotypic.com
-
-### sandboxnet
-
-| gRPC                                 | HTTP
-|:------------------------------------:|:-----------------------------------------:
-| node0.sandboxnet.rchain-dev.tk:40401 | https://sandboxnet-0.grpc.rchain.isotypic.com
-| node1.sandboxnet.rchain-dev.tk:40401 | https://sandboxnet-1.grpc.rchain.isotypic.com
-| node2.sandboxnet.rchain-dev.tk:40401 | https://sandboxnet-2.grpc.rchain.isotypic.com
-| node3.sandboxnet.rchain-dev.tk:40401 | https://sandboxnet-3.grpc.rchain.isotypic.com
-| node4.sandboxnet.rchain-dev.tk:40401 | https://sandboxnet-4.grpc.rchain.isotypic.com
