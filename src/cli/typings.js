@@ -5,7 +5,7 @@ import { protoTsTypesMapping } from '../lib'
 
 const { log } = console
 
-const { readFile, writeFile, readdir, stat } = fs.promises
+const { readFile, writeFile, readdir, stat } = fs
 
 const isFile = async checkPath => {
   const s = await stat(checkPath)
@@ -33,7 +33,7 @@ const readProto = protoPath => R.pipeWith(then, [
   readdir,
   mapAsync(async fileName => path.resolve(protoPath, fileName)),
   filterAsync(isFile),
-  mapAsync(R.flip(readFile)('utf8')),
+  mapAsync(fp => readFile(fp, 'utf8')),
 ])(protoPath)
 
 // Parse service name
