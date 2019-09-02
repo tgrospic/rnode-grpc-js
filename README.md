@@ -57,6 +57,14 @@ interface DeployService {
 }
 ```
 
+## CLI options
+
+| Option             | Default            | Description
+| -------------------| ------------------ | ------------
+| --rnode-version    | `v0.9.12`          | Version (repo tag) of RNode to generate API.
+| --gen-dir          | `./rnode-grpc-gen` | Path to output directory.
+| --grpc-web-version | `1.0.6`            | Version of [protoc-gen-grpc-web](https://github.com/grpc/grpc-web/tree/513a578f7f454593c9c238377f56b4c6f4ff04d8/packages/grpc-web#quick-start) _protoc_ plugin.
+
 ## API
 
 ```typescript
@@ -114,6 +122,7 @@ Code assumes running Envoy proxy to convert gRPC to HTTP requests. At the bottom
 Working version of this example can be found here [@tgrospic/rnode-client-js/src/web/index.js](https://github.com/tgrospic/rnode-client-js/blob/master/src/web/index.js).
 
 ```typescript
+/// <reference path="../../rnode-grpc-gen/js/rnode-grps-js.d.ts" />
 import { ec } from 'elliptic'
 import { rnodeDeploy, rnodePropose, signDeploy, verifyDeploy } from '@tgrospic/rnode-grpc-js'
 
@@ -165,6 +174,7 @@ await propose()
 #### Protobuf serialize and deserialize operations
 
 ```typescript
+/// <reference path="../../rnode-grpc-gen/js/rnode-grps-js.d.ts" />
 // Generated protobuf files must be loaded to instantiate a global proto object
 // needed for `rnodeProtobuf`
 require('../../rnode-grpc-gen/js/DeployService_pb')
