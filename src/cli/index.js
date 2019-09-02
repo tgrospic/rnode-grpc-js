@@ -4,35 +4,25 @@ import fs from 'fs-extra'
 import Mode from 'stat-mode'
 import * as R from 'ramda'
 import { parseArgs } from './args'
-import { downloadAll } from './download'
+import { downloadAll, fetch } from './download'
 import { generateTs } from './typings'
+import { mapAsync, chainAsync, waitExit, then, filterAsync } from '../lib'
+
+// Relative location of directories where protobuf files are located
+// in RChain main repository https://github.com/rchain/rchain
+const rchainProtoDirs = ['models/src/main/protobuf', 'node/src/main/protobuf']
 
 const { log, error } = console
 
 const blue = txt => `\u001b[34m${txt}\u001b[0m`
 
-// RNode proto files
-// TODO: Add support to control files per version (or use Github API)
-const proto0_9_12 = {
-  types   : ['CasperMessage', 'RhoTypes'],
-  services: ['DeployService', 'ProposeService'],
-  others  : ['Either', 'routing']
-}
-
-const getProtoFilePaths = protoPath => R.pipe(
-  Object.values,
-  R.flatten,
-  R.map(x => path.resolve(protoPath, `${x}.proto`)),
-)
-
 const ext = process.platform === 'win32' ? '.cmd' : ''
 
-const generateJsPb = async ({jsPath, protoPath, binPath}) => {
+const generateJsPb = async ({jsPath, protoPath, binPath, protoFiles}) => {
   const npmBin = 'node_modules/.bin'
   const protoc = path.resolve(npmBin, `grpc_tools_node_protoc${ext}`)
   const protocPlugin = path.resolve(npmBin, `grpc_tools_node_protoc_plugin${ext}`)
 
-  const protoFiles = getProtoFilePaths(protoPath)(proto0_9_12)
   const args = [
     `--js_out=import_style=commonjs:${jsPath}`,
     `--grpc_out=${jsPath}`,
@@ -40,7 +30,6 @@ const generateJsPb = async ({jsPath, protoPath, binPath}) => {
     `--plugin=protoc-gen-grpc=${protocPlugin}`,
     `--plugin=${binPath}/protoc-gen-grpc-web`,
     `-I${protoPath}`,
-    `${protoPath}/scalapb/scalapb.proto`,
     ...protoFiles,
   ]
   const protocExe = spawn(protoc, args, {stdio: 'inherit'})
@@ -48,27 +37,19 @@ const generateJsPb = async ({jsPath, protoPath, binPath}) => {
   return waitExit(protocExe, null, `Failed to generate JS files with grpc-tools.`)
 }
 
-const generateJsonPb = async ({jsPath, protoPath}) => {
+const generateJsonPb = async ({jsPath, protoFiles}) => {
   const npmBin = 'node_modules/.bin'
   const pbjs = path.resolve(npmBin, `pbjs${ext}`)
   const jsonPath = `${jsPath}/pbjs_generated.json`
   const args = [
     `-t`, `json`,
     `-o`, jsonPath,
-    `${protoPath}/scalapb/*.proto`,
-    `${protoPath}/*.proto`
+    ...protoFiles,
   ]
   const pbExe = spawn(pbjs, args, {stdio: 'inherit'})
 
   return waitExit(pbExe, jsonPath, `Failed to generate JSON schema with pbjs.`)
 }
-
-const waitExit = (proc, result, error) =>
-  new Promise((resolve, reject) => {
-    proc.on('exit', code => {
-      code === 0 ? resolve(result) : reject(error)
-    })
-  })
 
 export const run = async ({args, cwd}) => {
   // Input options
@@ -98,32 +79,44 @@ export const run = async ({args, cwd}) => {
   const downloadUrl = grpcWebUrlPrefix + grpcWebVersion + '/' + grpcWebFileName
   const grpcWebDownload = { filePath, downloadUrl }
 
+  // Get proto files with Github API
+  const githubListFilesUrl = dir =>
+    `https://api.github.com/repos/rchain/rchain/contents/${dir}?ref=${version}`
+
+  const fetchProtoListFromGithub = dir => fetch({
+    url: githubListFilesUrl(dir),
+    headers: { 'User-Agent': 'rnode-grpc-js generator for RChain RNode API' },
+    json: true,
+  })
+
   // Proto files download params
-  const protoUrlPrefix = `https://raw.githubusercontent.com/rchain/rchain/${version}/models/src/main/protobuf/`
-  const protoDownloads = R.pipe(
-    Object.values,
-    R.flatten,
-    R.map(x => ({ downloadUrl: `${protoUrlPrefix}${x}.proto`, filePath: path.resolve(protoPath, `${x}.proto`) })),
-  )
+  const protoDownload = ({name, download_url}) =>
+    ({ downloadUrl: download_url, filePath: path.resolve(protoPath, name) })
+
   // Additional proto file not in RChain repo
   const scalapbDownload = {
     downloadUrl: 'https://raw.githubusercontent.com/scalapb/ScalaPB/master/protobuf/scalapb/scalapb.proto',
     filePath: path.resolve(scalapbPath, 'scalapb.proto'),
   }
 
+  // Fetch info of all proto files
+  const protoDownloads = await R.pipe(
+    chainAsync(fetchProtoListFromGithub),
+    filterAsync(({name}) => name !== 'routing.proto'),
+    mapAsync(protoDownload),
+    then(R.append(scalapbDownload)),
+  )(rchainProtoDirs)
+
   // All downloads
   const downloads = [
     grpcWebDownload,
-    ...protoDownloads(proto0_9_12),
-    scalapbDownload,
+    ...protoDownloads,
   ]
 
   // Cleanup existing files and ensure directory structure
+  const newDirs = [protoPath, scalapbPath, binPath, jsPath]
   await fs.remove(dirPath)
-  await fs.ensureDir(protoPath)
-  await fs.ensureDir(scalapbPath)
-  await fs.ensureDir(binPath)
-  await fs.ensureDir(jsPath)
+  await mapAsync(fs.ensureDir, newDirs)
 
   log(blue('Startinmg downloads...'))
 
@@ -141,17 +134,19 @@ export const run = async ({args, cwd}) => {
 
   log(blue('Generating JS files...'))
 
+  const protoFiles = R.map(R.prop('filePath'), protoDownloads)
+
   // Generate JS code from proto files (with grpc-tools)
-  await generateJsPb({jsPath, protoPath, binPath})
+  await generateJsPb({jsPath, protoPath, binPath, protoFiles})
 
   // Generate JSON definition from proto files (with protobufjs)
-  const jsonPath = await generateJsonPb({jsPath, protoPath})
+  const jsonPath = await generateJsonPb({jsPath, protoFiles})
 
   // Load generated pbjs JSON schema
   const protoSchema = require(jsonPath)
 
-  log(blue('Generating Typescript definitions...'))
+  log(blue('Generating TypeScript definitions...'))
 
-  // Generate Typescript definitions
+  // Generate TypeScript definitions
   await generateTs({jsPath, protoPath, protoSchema})
 }

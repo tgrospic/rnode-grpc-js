@@ -36,3 +36,11 @@ export const downloadAll = R.pipe(
   R.map(downLoadFile),
   Promise.all.bind(Promise),
 )
+
+export const fetch = opt => new Promise((resolve, reject) => {
+  request(opt, (err, response, body) => {
+    const isJson = !!opt.json
+    if (err) reject(err)
+    else resolve(isJson ? body : response)
+  })
+})
