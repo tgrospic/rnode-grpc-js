@@ -100,18 +100,18 @@ Generated TypeScript definitions are complete with _dynamic_ `Either` type conve
 ```typescript
 // Typescipt generated interface from RNode v0.9.12 protbuf definitions
 interface DeployService {
-  DoDeploy(_: DeployData): Promise<DeployServiceResponse>
-  getBlock(_: BlockQuery): Promise<BlockQueryResponse>
-  visualizeDag(_: VisualizeDagQuery): Promise<VisualizeBlocksResponse[]>
-  machineVerifiableDag(_: MachineVerifyQuery): Promise<Unit>
-  showMainChain(_: BlocksQuery): Promise<LightBlockInfo[]>
-  getBlocks(_: BlocksQuery): Promise<LightBlockInfo[]>
+  DoDeploy(_?: DeployData): Promise<DeployServiceResponse>
+  getBlock(_?: BlockQuery): Promise<BlockQueryResponse>
+  visualizeDag(_?: VisualizeDagQuery): Promise<VisualizeBlocksResponse[]>
+  machineVerifiableDag(_?: MachineVerifyQuery): Promise<Unit>
+  showMainChain(_?: BlocksQuery): Promise<LightBlockInfo[]>
+  getBlocks(_?: BlocksQuery): Promise<LightBlockInfo[]>
   listenForDataAtName(_: DataAtNameQuery): Promise<ListeningNameDataResponse>
   listenForContinuationAtName(_: ContinuationAtNameQuery): Promise<ListeningNameContinuationResponse>
-  findBlockWithDeploy(_: FindDeployInBlockQuery): Promise<BlockQueryResponse>
-  findDeploy(_: FindDeployQuery): Promise<LightBlockQueryResponse>
-  previewPrivateNames(_: PrivateNamePreviewQuery): Promise<PrivateNamePreviewResponse>
-  lastFinalizedBlock(_: LastFinalizedBlockQuery): Promise<BlockQueryResponse>
+  findBlockWithDeploy(_?: FindDeployInBlockQuery): Promise<BlockQueryResponse>
+  findDeploy(_?: FindDeployQuery): Promise<LightBlockQueryResponse>
+  previewPrivateNames(_?: PrivateNamePreviewQuery): Promise<PrivateNamePreviewResponse>
+  lastFinalizedBlock(_?: LastFinalizedBlockQuery): Promise<BlockQueryResponse>
 }
 ```
 
