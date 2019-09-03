@@ -27,12 +27,17 @@ export const flattenSchema = parentPath => schema => {
   const getProps = R.pipe(
     Object.entries,
     R.chain(([name, v]) => {
+      const {methods, fields, nested} = v
       const namespace = parentPath
-      if (v.methods)
-        return { namespace, type: 'service', name, methods: v.methods }
-      else if (v.fields)
-        return { namespace, type: 'type', name, fields: v.fields }
-      else if (v.nested)
+      if (methods)
+        return { namespace, type: 'service', name, methods }
+      else if (fields) {
+        const nullables = R.pipe(
+          R.propOr({}, 'oneofs'), Object.values, R.chain(R.prop('oneof'))
+        )(v)
+        return { namespace, type: 'type', name, fields, nullables }
+      }
+      else if (nested)
         return R.chain(flattenSchema([...parentPath, name]), [v])
     }),
     R.reject(R.isNil),

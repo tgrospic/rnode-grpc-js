@@ -38,9 +38,11 @@ export const downloadAll = R.pipe(
 )
 
 export const fetch = opt => new Promise((resolve, reject) => {
-  request(opt, (err, response, body) => {
+  request(opt, (err, res, body) => {
     const isJson = !!opt.json
     if (err) reject(err)
-    else resolve(isJson ? body : response)
+    else if (res.statusCode !== 200)
+      reject(Error(`HTTP ${res.statusCode}`))
+    else resolve(isJson ? body : res)
   })
 })

@@ -129,27 +129,27 @@ declare module "@tgrospic/rnode-grpc-js" {
   export function rnodeProtobuf(protoSchema): TypesBinary
 
   interface DeployService {
-    DoDeploy(_: DeployData): Promise<DeployServiceResponse>
-    getBlock(_: BlockQuery): Promise<BlockQueryResponse>
-    visualizeDag(_: VisualizeDagQuery): Promise<VisualizeBlocksResponse[]>
-    machineVerifiableDag(_: MachineVerifyQuery): Promise<Unit>
-    showMainChain(_: BlocksQuery): Promise<LightBlockInfo[]>
-    getBlocks(_: BlocksQuery): Promise<LightBlockInfo[]>
+    DoDeploy(_?: DeployData): Promise<DeployServiceResponse>
+    getBlock(_?: BlockQuery): Promise<BlockQueryResponse>
+    visualizeDag(_?: VisualizeDagQuery): Promise<VisualizeBlocksResponse[]>
+    machineVerifiableDag(_?: MachineVerifyQuery): Promise<Unit>
+    showMainChain(_?: BlocksQuery): Promise<LightBlockInfo[]>
+    getBlocks(_?: BlocksQuery): Promise<LightBlockInfo[]>
     listenForDataAtName(_: DataAtNameQuery): Promise<ListeningNameDataResponse>
     listenForContinuationAtName(_: ContinuationAtNameQuery): Promise<ListeningNameContinuationResponse>
-    findBlockWithDeploy(_: FindDeployInBlockQuery): Promise<BlockQueryResponse>
-    findDeploy(_: FindDeployQuery): Promise<LightBlockQueryResponse>
-    previewPrivateNames(_: PrivateNamePreviewQuery): Promise<PrivateNamePreviewResponse>
-    lastFinalizedBlock(_: LastFinalizedBlockQuery): Promise<BlockQueryResponse>
+    findBlockWithDeploy(_?: FindDeployInBlockQuery): Promise<BlockQueryResponse>
+    findDeploy(_?: FindDeployQuery): Promise<LightBlockQueryResponse>
+    previewPrivateNames(_?: PrivateNamePreviewQuery): Promise<PrivateNamePreviewResponse>
+    lastFinalizedBlock(_?: LastFinalizedBlockQuery): Promise<BlockQueryResponse>
   }
 
   interface ProposeService {
-    propose(_: PrintUnmatchedSendsQuery): Promise<Unit>
+    propose(_?: PrintUnmatchedSendsQuery): Promise<Unit>
   }
 
   interface Repl {
-    Run(_: CmdRequest): Promise<ReplResponse>
-    Eval(_: EvalRequest): Promise<ReplResponse>
+    Run(_?: CmdRequest): Promise<ReplResponse>
+    Eval(_?: EvalRequest): Promise<ReplResponse>
   }
 
   interface Unit {}
@@ -159,22 +159,22 @@ declare module "@tgrospic/rnode-grpc-js" {
 
   interface UnsignedDeployData {
     term: String
-    timestamp: Number | Long
+    timestamp?: Number | Long
     phloLimit: Number | Long
     phloPrice?: Number | Long
     validAfterBlockNumber?: Number | Long
   }
 
   interface HasBlockRequest {
-    hash: Uint8Array /* bytes */
+    hash?: Uint8Array /* bytes */
   }
 
   interface HasBlock {
-    hash: Uint8Array /* bytes */
+    hash?: Uint8Array /* bytes */
   }
 
   interface BlockRequest {
-    hash: Uint8Array /* bytes */
+    hash?: Uint8Array /* bytes */
   }
 
   interface ForkChoiceTipRequest {
@@ -183,19 +183,19 @@ declare module "@tgrospic/rnode-grpc-js" {
 
   interface ApprovedBlockCandidate {
     block: BlockMessage
-    requiredSigs: number /* int32 */
+    requiredSigs?: number /* int32 */
   }
 
   interface UnapprovedBlock {
     candidate: ApprovedBlockCandidate
-    timestamp: number | Long /* int64 */
-    duration: number | Long /* int64 */
+    timestamp?: number | Long /* int64 */
+    duration?: number | Long /* int64 */
   }
 
   interface Signature {
-    publicKey: Uint8Array /* bytes */
-    algorithm: string
-    sig: Uint8Array /* bytes */
+    publicKey?: Uint8Array /* bytes */
+    algorithm?: string
+    sig?: Uint8Array /* bytes */
   }
 
   interface BlockApproval {
@@ -205,148 +205,148 @@ declare module "@tgrospic/rnode-grpc-js" {
 
   interface ApprovedBlock {
     candidate: ApprovedBlockCandidate
-    sigs: Signature[]
+    sigs?: Signature[]
   }
 
   interface ApprovedBlockRequest {
-    identifier: string
+    identifier?: string
   }
 
   interface NoApprovedBlockAvailable {
-    identifier: string
-    nodeIdentifer: string
+    identifier?: string
+    nodeIdentifer?: string
   }
 
   interface BlockMessage {
-    blockHash: Uint8Array /* bytes */
+    blockHash?: Uint8Array /* bytes */
     header: Header
     body: Body
-    justifications: Justification[]
-    sender: Uint8Array /* bytes */
-    seqNum: number /* int32 */
-    sig: Uint8Array /* bytes */
-    sigAlgorithm: string
-    shardId: string
-    extraBytes: Uint8Array /* bytes */
+    justifications?: Justification[]
+    sender?: Uint8Array /* bytes */
+    seqNum?: number /* int32 */
+    sig?: Uint8Array /* bytes */
+    sigAlgorithm?: string
+    shardId?: string
+    extraBytes?: Uint8Array /* bytes */
   }
 
   interface BlockMetadataInternal {
-    blockHash: Uint8Array /* bytes */
-    parents: Uint8Array[] /* bytes */
-    sender: Uint8Array /* bytes */
-    justifications: Justification[]
-    bonds: Bond[]
-    blockNum: number | Long /* int64 */
-    seqNum: number /* int32 */
-    invalid: boolean /* bool */
+    blockHash?: Uint8Array /* bytes */
+    parents?: Uint8Array[] /* bytes */
+    sender?: Uint8Array /* bytes */
+    justifications?: Justification[]
+    bonds?: Bond[]
+    blockNum?: number | Long /* int64 */
+    seqNum?: number /* int32 */
+    invalid?: boolean /* bool */
   }
 
   interface Header {
-    parentsHashList: Uint8Array[] /* bytes */
-    postStateHash: Uint8Array /* bytes */
-    deploysHash: Uint8Array /* bytes */
-    timestamp: number | Long /* int64 */
-    version: number | Long /* int64 */
-    deployCount: number /* int32 */
-    extraBytes: Uint8Array /* bytes */
+    parentsHashList?: Uint8Array[] /* bytes */
+    postStateHash?: Uint8Array /* bytes */
+    deploysHash?: Uint8Array /* bytes */
+    timestamp?: number | Long /* int64 */
+    version?: number | Long /* int64 */
+    deployCount?: number /* int32 */
+    extraBytes?: Uint8Array /* bytes */
   }
 
   interface DeployData {
-    deployer: Uint8Array /* bytes */
-    term: string
-    timestamp: number | Long /* int64 */
-    sig: Uint8Array /* bytes */
-    sigAlgorithm: string
-    phloPrice: number | Long /* int64 */
-    phloLimit: number | Long /* int64 */
-    validAfterBlockNumber: number | Long /* int64 */
+    deployer?: Uint8Array /* bytes */
+    term?: string
+    timestamp?: number | Long /* int64 */
+    sig?: Uint8Array /* bytes */
+    sigAlgorithm?: string
+    phloPrice?: number | Long /* int64 */
+    phloLimit?: number | Long /* int64 */
+    validAfterBlockNumber?: number | Long /* int64 */
   }
 
   interface ProcessedDeploy {
     deploy: DeployData
     cost: PCost
-    deployLog: Event[]
-    paymentLog: Event[]
-    errored: boolean /* bool */
+    deployLog?: Event[]
+    paymentLog?: Event[]
+    errored?: boolean /* bool */
   }
 
   interface Body {
     state: RChainState
-    deploys: ProcessedDeploy[]
-    extraBytes: Uint8Array /* bytes */
+    deploys?: ProcessedDeploy[]
+    extraBytes?: Uint8Array /* bytes */
   }
 
   interface Justification {
-    validator: Uint8Array /* bytes */
-    latestBlockHash: Uint8Array /* bytes */
+    validator?: Uint8Array /* bytes */
+    latestBlockHash?: Uint8Array /* bytes */
   }
 
   interface RChainState {
-    preStateHash: Uint8Array /* bytes */
-    postStateHash: Uint8Array /* bytes */
-    bonds: Bond[]
-    blockNumber: number | Long /* int64 */
+    preStateHash?: Uint8Array /* bytes */
+    postStateHash?: Uint8Array /* bytes */
+    bonds?: Bond[]
+    blockNumber?: number | Long /* int64 */
   }
 
   interface Event {
-    produce: ProduceEvent
-    consume: ConsumeEvent
-    comm: CommEvent
+    produce?: ProduceEvent
+    consume?: ConsumeEvent
+    comm?: CommEvent
   }
 
   interface ProduceEvent {
-    channelsHash: Uint8Array /* bytes */
-    hash: Uint8Array /* bytes */
-    persistent: boolean /* bool */
-    sequenceNumber: number /* int32 */
+    channelsHash?: Uint8Array /* bytes */
+    hash?: Uint8Array /* bytes */
+    persistent?: boolean /* bool */
+    sequenceNumber?: number /* int32 */
   }
 
   interface ConsumeEvent {
-    channelsHashes: Uint8Array[] /* bytes */
-    hash: Uint8Array /* bytes */
-    persistent: boolean /* bool */
-    sequenceNumber: number /* int32 */
+    channelsHashes?: Uint8Array[] /* bytes */
+    hash?: Uint8Array /* bytes */
+    persistent?: boolean /* bool */
+    sequenceNumber?: number /* int32 */
   }
 
   interface CommEvent {
     consume: ConsumeEvent
-    produces: ProduceEvent[]
+    produces?: ProduceEvent[]
   }
 
   interface Bond {
-    validator: Uint8Array /* bytes */
-    stake: number | Long /* int64 */
+    validator?: Uint8Array /* bytes */
+    stake?: number | Long /* int64 */
   }
 
   interface FindDeployQuery {
-    deployId: Uint8Array /* bytes */
+    deployId?: Uint8Array /* bytes */
   }
 
   interface FindDeployInBlockQuery {
-    user: Uint8Array /* bytes */
-    timestamp: number | Long /* int64 */
+    user?: Uint8Array /* bytes */
+    timestamp?: number | Long /* int64 */
   }
 
   interface BlockQuery {
-    hash: string
+    hash?: string
   }
 
   interface BlocksQuery {
-    depth: number /* int32 */
+    depth?: number /* int32 */
   }
 
   interface DataAtNameQuery {
-    depth: number /* int32 */
+    depth?: number /* int32 */
     name: Par
   }
 
   interface ContinuationAtNameQuery {
-    depth: number /* int32 */
-    names: Par[]
+    depth?: number /* int32 */
+    names?: Par[]
   }
 
   interface DeployServiceResponse {
-    message: string
+    message?: string
   }
 
   interface BlockQueryResponse {
@@ -358,12 +358,12 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface VisualizeDagQuery {
-    depth: number /* int32 */
-    showJustificationLines: boolean /* bool */
+    depth?: number /* int32 */
+    showJustificationLines?: boolean /* bool */
   }
 
   interface VisualizeBlocksResponse {
-    content: string
+    content?: string
   }
 
   interface MachineVerifyQuery {
@@ -371,27 +371,27 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface MachineVerifyResponse {
-    content: string
+    content?: string
   }
 
   interface ListeningNameDataResponse {
-    blockResults: DataWithBlockInfo[]
-    length: number /* int32 */
+    blockResults?: DataWithBlockInfo[]
+    length?: number /* int32 */
   }
 
   interface ListeningNameContinuationResponse {
-    blockResults: ContinuationsWithBlockInfo[]
-    length: number /* int32 */
+    blockResults?: ContinuationsWithBlockInfo[]
+    length?: number /* int32 */
   }
 
   interface PrivateNamePreviewQuery {
-    user: Uint8Array /* bytes */
-    timestamp: number | Long /* int64 */
-    nameQty: number /* int32 */
+    user?: Uint8Array /* bytes */
+    timestamp?: number | Long /* int64 */
+    nameQty?: number /* int32 */
   }
 
   interface PrivateNamePreviewResponse {
-    ids: Uint8Array[] /* bytes */
+    ids?: Uint8Array[] /* bytes */
   }
 
   interface LastFinalizedBlockQuery {
@@ -403,235 +403,235 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface LightBlockInfo {
-    blockHash: string
-    blockSize: string
-    blockNumber: number | Long /* int64 */
-    version: number | Long /* int64 */
-    deployCount: number /* int32 */
-    tupleSpaceHash: string
-    timestamp: number | Long /* int64 */
-    faultTolerance: number /* float */
-    mainParentHash: string
-    parentsHashList: string[]
-    sender: string
+    blockHash?: string
+    blockSize?: string
+    blockNumber?: number | Long /* int64 */
+    version?: number | Long /* int64 */
+    deployCount?: number /* int32 */
+    tupleSpaceHash?: string
+    timestamp?: number | Long /* int64 */
+    faultTolerance?: number /* float */
+    mainParentHash?: string
+    parentsHashList?: string[]
+    sender?: string
   }
 
   interface BlockInfo {
-    blockHash: string
-    blockSize: string
-    blockNumber: number | Long /* int64 */
-    version: number | Long /* int64 */
-    deployCount: number /* int32 */
-    tupleSpaceHash: string
-    timestamp: number | Long /* int64 */
-    faultTolerance: number /* float */
-    mainParentHash: string
-    parentsHashList: string[]
-    sender: string
-    shardId: string
-    bondsValidatorList: string[]
-    deployCost: string[]
+    blockHash?: string
+    blockSize?: string
+    blockNumber?: number | Long /* int64 */
+    version?: number | Long /* int64 */
+    deployCount?: number /* int32 */
+    tupleSpaceHash?: string
+    timestamp?: number | Long /* int64 */
+    faultTolerance?: number /* float */
+    mainParentHash?: string
+    parentsHashList?: string[]
+    sender?: string
+    shardId?: string
+    bondsValidatorList?: string[]
+    deployCost?: string[]
   }
 
   interface DataWithBlockInfo {
-    postBlockData: Par[]
+    postBlockData?: Par[]
     block: LightBlockInfo
   }
 
   interface ContinuationsWithBlockInfo {
-    postBlockContinuations: WaitingContinuationInfo[]
+    postBlockContinuations?: WaitingContinuationInfo[]
     block: LightBlockInfo
   }
 
   interface WaitingContinuationInfo {
-    postBlockPatterns: BindPattern[]
+    postBlockPatterns?: BindPattern[]
     postBlockContinuation: Par
   }
 
   interface PrintUnmatchedSendsQuery {
-    printUnmatchedSends: boolean /* bool */
+    printUnmatchedSends?: boolean /* bool */
   }
 
   interface CmdRequest {
-    line: string
+    line?: string
   }
 
   interface EvalRequest {
-    program: string
-    printUnmatchedSendsOnly: boolean /* bool */
+    program?: string
+    printUnmatchedSendsOnly?: boolean /* bool */
   }
 
   interface ReplResponse {
-    output: string
+    output?: string
   }
 
   interface Par {
-    sends: Send[]
-    receives: Receive[]
-    news: New[]
-    exprs: Expr[]
-    matches: Match[]
-    unforgeables: GUnforgeable[]
-    bundles: Bundle[]
-    connectives: Connective[]
-    locallyFree: Uint8Array /* bytes */
-    connectiveUsed: boolean /* bool */
+    sends?: Send[]
+    receives?: Receive[]
+    news?: New[]
+    exprs?: Expr[]
+    matches?: Match[]
+    unforgeables?: GUnforgeable[]
+    bundles?: Bundle[]
+    connectives?: Connective[]
+    locallyFree?: Uint8Array /* bytes */
+    connectiveUsed?: boolean /* bool */
   }
 
   interface TaggedContinuation {
-    parBody: ParWithRandom
-    scalaBodyRef: number | Long /* int64 */
+    parBody?: ParWithRandom
+    scalaBodyRef?: number | Long /* int64 */
   }
 
   interface ParWithRandom {
     body: Par
-    randomState: Uint8Array /* bytes */
+    randomState?: Uint8Array /* bytes */
   }
 
   interface PCost {
-    cost: number | Long /* uint64 */
+    cost?: number | Long /* uint64 */
   }
 
   interface ListParWithRandom {
-    pars: Par[]
-    randomState: Uint8Array /* bytes */
+    pars?: Par[]
+    randomState?: Uint8Array /* bytes */
   }
 
   interface Var {
-    boundVar: number /* sint32 */
-    freeVar: number /* sint32 */
-    wildcard: WildcardMsg
+    boundVar?: number /* sint32 */
+    freeVar?: number /* sint32 */
+    wildcard?: WildcardMsg
   }
 
   interface Bundle {
     body: Par
-    writeFlag: boolean /* bool */
-    readFlag: boolean /* bool */
+    writeFlag?: boolean /* bool */
+    readFlag?: boolean /* bool */
   }
 
   interface Send {
     chan: Par
-    data: Par[]
-    persistent: boolean /* bool */
-    locallyFree: Uint8Array /* bytes */
-    connectiveUsed: boolean /* bool */
+    data?: Par[]
+    persistent?: boolean /* bool */
+    locallyFree?: Uint8Array /* bytes */
+    connectiveUsed?: boolean /* bool */
   }
 
   interface ReceiveBind {
-    patterns: Par[]
+    patterns?: Par[]
     source: Par
     remainder: Var
-    freeCount: number /* int32 */
+    freeCount?: number /* int32 */
   }
 
   interface BindPattern {
-    patterns: Par[]
+    patterns?: Par[]
     remainder: Var
-    freeCount: number /* int32 */
+    freeCount?: number /* int32 */
   }
 
   interface ListBindPatterns {
-    patterns: BindPattern[]
+    patterns?: BindPattern[]
   }
 
   interface Receive {
-    binds: ReceiveBind[]
+    binds?: ReceiveBind[]
     body: Par
-    persistent: boolean /* bool */
-    peek: boolean /* bool */
-    bindCount: number /* int32 */
-    locallyFree: Uint8Array /* bytes */
-    connectiveUsed: boolean /* bool */
+    persistent?: boolean /* bool */
+    peek?: boolean /* bool */
+    bindCount?: number /* int32 */
+    locallyFree?: Uint8Array /* bytes */
+    connectiveUsed?: boolean /* bool */
   }
 
   interface New {
-    bindCount: number /* sint32 */
+    bindCount?: number /* sint32 */
     p: Par
-    uri: string[]
+    uri?: string[]
     deployId: DeployId
     deployerId: DeployerId
-    locallyFree: Uint8Array /* bytes */
+    locallyFree?: Uint8Array /* bytes */
   }
 
   interface MatchCase {
     pattern: Par
     source: Par
-    freeCount: number /* int32 */
+    freeCount?: number /* int32 */
   }
 
   interface Match {
     target: Par
-    cases: MatchCase[]
-    locallyFree: Uint8Array /* bytes */
-    connectiveUsed: boolean /* bool */
+    cases?: MatchCase[]
+    locallyFree?: Uint8Array /* bytes */
+    connectiveUsed?: boolean /* bool */
   }
 
   interface Expr {
-    gBool: boolean /* bool */
-    gInt: number | Long /* sint64 */
-    gString: string
-    gUri: string
-    gByteArray: Uint8Array /* bytes */
-    eNotBody: ENot
-    eNegBody: ENeg
-    eMultBody: EMult
-    eDivBody: EDiv
-    ePlusBody: EPlus
-    eMinusBody: EMinus
-    eLtBody: ELt
-    eLteBody: ELte
-    eGtBody: EGt
-    eGteBody: EGte
-    eEqBody: EEq
-    eNeqBody: ENeq
-    eAndBody: EAnd
-    eOrBody: EOr
-    eVarBody: EVar
-    eListBody: EList
-    eTupleBody: ETuple
-    eSetBody: ESet
-    eMapBody: EMap
-    eMethodBody: EMethod
-    eMatchesBody: EMatches
-    ePercentPercentBody: EPercentPercent
-    ePlusPlusBody: EPlusPlus
-    eMinusMinusBody: EMinusMinus
-    eModBody: EMod
+    gBool?: boolean /* bool */
+    gInt?: number | Long /* sint64 */
+    gString?: string
+    gUri?: string
+    gByteArray?: Uint8Array /* bytes */
+    eNotBody?: ENot
+    eNegBody?: ENeg
+    eMultBody?: EMult
+    eDivBody?: EDiv
+    ePlusBody?: EPlus
+    eMinusBody?: EMinus
+    eLtBody?: ELt
+    eLteBody?: ELte
+    eGtBody?: EGt
+    eGteBody?: EGte
+    eEqBody?: EEq
+    eNeqBody?: ENeq
+    eAndBody?: EAnd
+    eOrBody?: EOr
+    eVarBody?: EVar
+    eListBody?: EList
+    eTupleBody?: ETuple
+    eSetBody?: ESet
+    eMapBody?: EMap
+    eMethodBody?: EMethod
+    eMatchesBody?: EMatches
+    ePercentPercentBody?: EPercentPercent
+    ePlusPlusBody?: EPlusPlus
+    eMinusMinusBody?: EMinusMinus
+    eModBody?: EMod
   }
 
   interface EList {
-    ps: Par[]
-    locallyFree: Uint8Array /* bytes */
-    connectiveUsed: boolean /* bool */
+    ps?: Par[]
+    locallyFree?: Uint8Array /* bytes */
+    connectiveUsed?: boolean /* bool */
     remainder: Var
   }
 
   interface ETuple {
-    ps: Par[]
-    locallyFree: Uint8Array /* bytes */
-    connectiveUsed: boolean /* bool */
+    ps?: Par[]
+    locallyFree?: Uint8Array /* bytes */
+    connectiveUsed?: boolean /* bool */
   }
 
   interface ESet {
-    ps: Par[]
-    locallyFree: Uint8Array /* bytes */
-    connectiveUsed: boolean /* bool */
+    ps?: Par[]
+    locallyFree?: Uint8Array /* bytes */
+    connectiveUsed?: boolean /* bool */
     remainder: Var
   }
 
   interface EMap {
-    kvs: KeyValuePair[]
-    locallyFree: Uint8Array /* bytes */
-    connectiveUsed: boolean /* bool */
+    kvs?: KeyValuePair[]
+    locallyFree?: Uint8Array /* bytes */
+    connectiveUsed?: boolean /* bool */
     remainder: Var
   }
 
   interface EMethod {
-    methodName: string
+    methodName?: string
     target: Par
-    arguments: Par[]
-    locallyFree: Uint8Array /* bytes */
-    connectiveUsed: boolean /* bool */
+    arguments?: Par[]
+    locallyFree?: Uint8Array /* bytes */
+    connectiveUsed?: boolean /* bool */
   }
 
   interface KeyValuePair {
@@ -737,59 +737,59 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface Connective {
-    connAndBody: ConnectiveBody
-    connOrBody: ConnectiveBody
-    connNotBody: Par
-    varRefBody: VarRef
-    connBool: boolean /* bool */
-    connInt: boolean /* bool */
-    connString: boolean /* bool */
-    connUri: boolean /* bool */
-    connByteArray: boolean /* bool */
+    connAndBody?: ConnectiveBody
+    connOrBody?: ConnectiveBody
+    connNotBody?: Par
+    varRefBody?: VarRef
+    connBool?: boolean /* bool */
+    connInt?: boolean /* bool */
+    connString?: boolean /* bool */
+    connUri?: boolean /* bool */
+    connByteArray?: boolean /* bool */
   }
 
   interface VarRef {
-    index: number /* sint32 */
-    depth: number /* sint32 */
+    index?: number /* sint32 */
+    depth?: number /* sint32 */
   }
 
   interface ConnectiveBody {
-    ps: Par[]
+    ps?: Par[]
   }
 
   interface DeployId {
-    sig: Uint8Array /* bytes */
+    sig?: Uint8Array /* bytes */
   }
 
   interface DeployerId {
-    publicKey: Uint8Array /* bytes */
+    publicKey?: Uint8Array /* bytes */
   }
 
   interface GUnforgeable {
-    gPrivateBody: GPrivate
-    gDeployIdBody: GDeployId
-    gDeployerIdBody: GDeployerId
+    gPrivateBody?: GPrivate
+    gDeployIdBody?: GDeployId
+    gDeployerIdBody?: GDeployerId
   }
 
   interface GPrivate {
-    id: Uint8Array /* bytes */
+    id?: Uint8Array /* bytes */
   }
 
   interface GDeployId {
-    sig: Uint8Array /* bytes */
+    sig?: Uint8Array /* bytes */
   }
 
   interface GDeployerId {
-    publicKey: Uint8Array /* bytes */
+    publicKey?: Uint8Array /* bytes */
   }
 
   interface EitherAny {
-    typeUrl: string
-    value: Uint8Array /* bytes */
+    typeUrl?: string
+    value?: Uint8Array /* bytes */
   }
 
   interface EitherError {
-    messages: string[]
+    messages?: string[]
   }
 
   interface EitherSuccess {
@@ -797,8 +797,8 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface Either {
-    error: EitherError
-    success: EitherSuccess
+    error?: EitherError
+    success?: EitherSuccess
   }
 
   // Protobuf binary serializer

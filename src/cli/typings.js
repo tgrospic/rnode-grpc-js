@@ -54,39 +54,43 @@ const methodResolveResponse = (service, meta) => (method, name) => {
 const serviceResolveResponse = meta => ({name, methods}) =>
   ({name, methods: R.mapObjIndexed(methodResolveResponse(name, meta), methods)})
 
+// Type helpers
+const getTsType = protoType => R.find(x => x.proto === protoType, protoTsTypesMapping)
+
 // Generates service method
-const genMethodCode = ([name, {requestType, responseType, responseStream}]) => {
+const methodCodeGen = getType => ([name, {requestType, responseType, responseStream}]) => {
+  const {fields} = getType(requestType)
+  const isSimpleType = ({type}) => getTsType(type)
+  const nullable = R.all(isSimpleType, Object.values(fields || {})) ? '?' : ''
   const suffix = responseStream ? '[]' : ''
-  return `${name}(_: ${requestType}): Promise<${responseType || 'Unit'}${suffix}>`
+  return `${name}(_${nullable}: ${requestType}): Promise<${responseType || 'Unit'}${suffix}>`
 }
 
 // Generates code for service interface
-const serviceCodeGen = ({name, methods}) =>
+const serviceCodeGen = getType => ({name, methods}) =>
   // Indentation is important, it's used in generated file
   `interface ${name} {
-    ${Object.entries(methods).map(genMethodCode).join('\n    ')}
+    ${Object.entries(methods).map(methodCodeGen(getType)).join('\n    ')}
   }`
 
-// Type helpers
-const simpleTypes = R.map(R.prop('proto'), protoTsTypesMapping)
-// TODO: add support to generate nested types
-const nestedTypes = ['WildcardMsg']
-const isSimpleType = type => R.contains(type, [...simpleTypes, ...nestedTypes])
-const getTsType = protoType => R.find(x => x.proto === protoType, protoTsTypesMapping)
+// Generates code for type field (property)
+const fieldCodeGen = (nullables, key, {type, rule}) => {
+  const tsType = getTsType(type)
+  const isList = rule === 'repeated'
+  const nullable = tsType || isList || R.includes(key, nullables) ? '?' : ''
+  const suffixList = isList ? '[]' : ''
+  const origType = tsType && tsType.ts !== type ? ` /* ${type} */` : ''
+  return tsType
+    ? `${key}${nullable}: ${tsType.ts}${suffixList}${origType}`
+    : `${key}${nullable}: ${type}${suffixList}`
+}
 
 // Generates code for type interface
-const typeCodeGen = ({name, fields, nested}) => {
-  const showFieldType = ({type, rule}) => {
-    const tsType = getTsType(type)
-    const suffixList = rule === 'repeated' ? '[]' : ''
-    const origType = tsType && tsType.ts !== type ? ` /* ${type} */` : ''
-    return tsType
-      ? `${tsType.ts}${suffixList}${origType}`
-      : `${type}${suffixList}`
-  }
+const typeCodeGen = ({name, fields, nullables}) => {
+  const fieldGenKV = ([k, field]) => fieldCodeGen(nullables, k, field)
   // Indentation is important, it's used in generated file
   return `interface ${name} {
-    ${Object.entries(fields).map(([k, field]) => `${k}: ${showFieldType(field)}`).join('\n    ')}
+    ${Object.entries(fields).map(fieldGenKV).join('\n    ')}
   }`
 }
 
@@ -100,21 +104,11 @@ export const generateTs = async ({jsPath, protoPath, protoSchema}) => {
   // Schema definition
   const schemaFlat = R.chain(flattenSchema([]), [protoSchema])
   const types = R.filter(R.propEq('type', 'type'), schemaFlat)
-  const getTypeDef = name => R.find(R.propEq('name', name), types)
+  const getType = name => R.find(R.propEq('name', name), types)
   const getServices = meta => R.pipe(
     R.filter(R.propEq('type', 'service')),
     R.map(serviceResolveResponse(meta)),
   )(schemaFlat)
-
-  // Returns type definition by type name (from protobufjs JSON)
-  const getTypeSchema = buffer => name => {
-    if (R.contains(name, buffer)) return []
-    const { fields, ...rest } = getTypeDef(name)
-    const getType = ([_, {type}]) => isSimpleType(type) ? [] : getTypeSchema([name, ...buffer])(type)
-    const fieldsTypes = R.pipe(Object.entries, R.chain(getType))(fields)
-
-    return [{name, fields, ...rest}, ...fieldsTypes]
-  }
 
   // Read proto files and TypeScript definition template
   const protoFiles   = await readProtoFiles(protoPath)
@@ -125,7 +119,7 @@ export const generateTs = async ({jsPath, protoPath, protoSchema}) => {
   const tsGenPath    = path.resolve(jsPath, 'rnode-grps-js.d.ts')
 
   // Generate services and types
-  const servicesGen = R.map(serviceCodeGen, services)
+  const servicesGen = R.map(serviceCodeGen(getType), services)
   const typesGen    = R.map(typeCodeGen, types)
   const binaryGen   = R.map(binaryOpCodeGen, types)
 

@@ -137,7 +137,7 @@ declare module "@tgrospic/rnode-grpc-js" {
 
   interface UnsignedDeployData {
     term: String
-    timestamp: Number | Long
+    timestamp?: Number | Long
     phloLimit: Number | Long
     phloPrice?: Number | Long
     validAfterBlockNumber?: Number | Long
