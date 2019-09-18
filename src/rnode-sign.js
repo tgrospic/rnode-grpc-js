@@ -18,7 +18,7 @@ export const signDeploy = (privateKey, deployObj) => {
   } = deployObj
 
   // Get DeployData contructor from global proto object
-  const { DeployData } = proto.coop.rchain.casper.protocol
+  const { DeployData } = proto.deploy
 
   // Serialize deploy data for signing
   const dd = new DeployData()
@@ -60,7 +60,7 @@ export const verifyDeploy = deployObj => {
   } = deployObj
 
   // Get DeployData contructor from global proto object
-  const { DeployData } = proto.coop.rchain.casper.protocol
+  const { DeployData } = proto.deploy
 
   // Serialize deploy data for signing
   const dd = new DeployData()

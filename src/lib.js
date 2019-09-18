@@ -18,11 +18,11 @@ export const protoTsTypesMapping = [
 const ignoredNamespaces = [
   ['scalapb'],
   ['google', 'protobuf'],
-  ["coop", "rchain", "comm", "protocol", "routing"]
+  ["routing"],
 ]
 
 // Transform generated (protobufjs) JSON to a flat list of services and types
-export const flattenSchema = parentPath => schema => {
+const buildFlattenSchema = parentPath => schema => {
   const nestedProps = R.prop('nested', schema)
   const getProps = R.pipe(
     Object.entries,
@@ -38,12 +38,21 @@ export const flattenSchema = parentPath => schema => {
         return { namespace, type: 'type', name, fields, nullables }
       }
       else if (nested)
-        return R.chain(flattenSchema([...parentPath, name]), [v])
+        return R.chain(buildFlattenSchema([...parentPath, name]), [v])
     }),
     R.reject(R.isNil),
     R.reject(({namespace}) => R.contains(namespace, ignoredNamespaces)),
   )
+
   return getProps(nestedProps || {})
+}
+
+export const flattenSchema = parentPath => schema => {
+  const ver = nr => [ ["deploy", `v${nr}`], ["propose", `v${nr}`] ]
+  const isVer = nr => ({namespace}) => R.includes(namespace, ver(nr))
+  const schemaList = buildFlattenSchema(parentPath)(schema)
+  // TODO: make some logic to select right version (highest by default?)
+  return R.reject(isVer(1), schemaList)
 }
 
 export const then = R.curry((f, p) => p.then(f))
