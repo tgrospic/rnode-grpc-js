@@ -15,11 +15,13 @@ Example of [Envoy configuration](https://github.com/grpc/grpc-web/blob/952d0f586
 ```sh
 npm install @tgrospic/rnode-grpc-js
 
-# For use with Nodejs
-npm install grpc
+# gRPC and protobuf for use with Nodejs
+npm install google-protobuf grpc
+# Or for use with the browser (via Envoy proxy)
+npm install google-protobuf grpc-web
 
-# For use with browser (via Envoy proxy)
-npm install grpc-web
+# For crypto operations (create private key)
+npm install elliptic
 ```
 
 Install peer dependencies needed to generate JS files from proto definitions.
