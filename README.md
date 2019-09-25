@@ -57,12 +57,12 @@ We can generate API from not yet published RNode version. E.g. `dev` branch.
 ```sh
 rnode-grpc --rnode-version dev
 ```
-And make requests to new _DeployService_ method `findBlockWithDeploy`. :smile:
+And make requests to new _DeployService_ method `isFinalized`. :smile:
 
 ```typescript
 interface DeployService {
   // Not yet available in v0.9.12 RNode
-  findBlockWithDeploy(_: FindDeployInBlockQuery): Promise<BlockQueryResponse>
+  isFinalized(_?: IsFinalizedQuery): Promise<IsFinalizedResponse>
   // ...existing methods
 }
 ```
