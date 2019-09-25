@@ -43,11 +43,6 @@ rnode-grpc --rnode-version v0.9.12 --gen-dir ./rnode-grpc-gen
 
 # Run from your project folder
 node_modules/.bin/rnode-grpc
-
-# Or with npx without installation
-npx @tgrospic/rnode-grpc-js -p grpc-tools -p protobufjs
-# Strangely, this gives an error
-# npx -p grpc-tools -p protobufjs @tgrospic/rnode-grpc-js
 ```
 ## CLI options
 
