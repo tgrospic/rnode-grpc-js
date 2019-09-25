@@ -114,9 +114,10 @@ export const generateTs = async ({jsPath, protoPath, protoSchema}) => {
   const protoFiles   = await readProtoFiles(protoPath)
   const servicesMeta = parseProtoReponseMeta(protoFiles)
   const services     = getServices(servicesMeta)
-  const tmplTsPath   = path.resolve(__dirname, './rnode-grps-js-tmpl.d.ts')
+  const tmplTsPath   = path.resolve(__dirname, './rnode-grpc-js-tmpl.d.ts')
   const tmplTs       = await readFile(tmplTsPath, 'utf8')
-  const tsGenPath    = path.resolve(jsPath, 'rnode-grps-js.d.ts')
+  const tsGenPath    = path.resolve(jsPath, 'rnode-grpc-js.d.ts')
+  const schemaPath   = path.resolve(jsPath, 'rnode-api-schema.json')
 
   // Generate services and types
   const servicesGen = R.map(serviceCodeGen(getType), services)
@@ -126,8 +127,11 @@ export const generateTs = async ({jsPath, protoPath, protoSchema}) => {
   // Replace in template
   const tsGen1 = tmplTs.replace('/*__SERVICES__*/', servicesGen.join('\n\n  '))
   const tsGen2 = tsGen1.replace('/*__TYPES__*/', typesGen.join('\n\n  '))
-  const tsGen3 = tsGen2.replace('/*_TYPES_BINARY_*/', binaryGen.join('\n    '))
+  const tsGen3 = tsGen2.replace('/*__TYPES_BINARY__*/', binaryGen.join('\n    '))
 
   // Write generated TypeScript file
   await writeFile(tsGenPath, tsGen3)
+
+  // Write flatten API schema
+  await writeFile(schemaPath, JSON.stringify(schemaFlat, null, 2))
 }

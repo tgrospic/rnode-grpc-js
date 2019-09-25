@@ -165,6 +165,6 @@ declare module "@tgrospic/rnode-grpc-js" {
   // Binary operations (serialize / deserialize) for all types
   // - serialize / deserialize functions exposed from generated JS objects
   interface TypesBinary {
-    /*_TYPES_BINARY_*/
+    /*__TYPES_BINARY__*/
   }
 }

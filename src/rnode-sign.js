@@ -11,10 +11,10 @@ export const signDeploy = (privateKey, deployObj) => {
   const {
     term,
     timestamp = new Date().getTime(),
-    phloPrice,
-    phloLimit,
-    validAfterBlockNumber,
-    sigAlgorithm = 'secp256k1',
+    phloprice,
+    phlolimit,
+    validafterblocknumber,
+    sigalgorithm = 'secp256k1',
   } = deployObj
 
   // Get DeployData contructor from global proto object
@@ -24,13 +24,13 @@ export const signDeploy = (privateKey, deployObj) => {
   const dd = new DeployData()
   dd.setTerm(term)
   dd.setTimestamp(timestamp)
-  dd.setPhloprice(phloPrice)
-  dd.setPhlolimit(phloLimit)
-  dd.setValidafterblocknumber(validAfterBlockNumber)
+  dd.setPhloprice(phloprice)
+  dd.setPhlolimit(phlolimit)
+  dd.setValidafterblocknumber(validafterblocknumber)
   const deploySerialized = dd.serializeBinary()
 
   // Signing key
-  const crypt    = new ec(sigAlgorithm)
+  const crypt    = new ec(sigalgorithm)
   const key      = getSignKey(crypt, privateKey)
   const deployer = Uint8Array.from(key.getPublic('array'))
   // Hash and sign serialized deploy
@@ -41,9 +41,9 @@ export const signDeploy = (privateKey, deployObj) => {
   // Return deploy object / ready for sending to RNode
   return {
     term, timestamp,
-    phloPrice, phloLimit,
-    validAfterBlockNumber,
-    deployer, sig, sigAlgorithm,
+    phloprice, phlolimit,
+    validafterblocknumber,
+    deployer, sig, sigalgorithm,
   }
 }
 
@@ -51,10 +51,10 @@ export const verifyDeploy = deployObj => {
   const {
     term,
     timestamp,
-    phloPrice,
-    phloLimit,
-    validAfterBlockNumber,
-    sigAlgorithm,
+    phloprice,
+    phlolimit,
+    validafterblocknumber,
+    sigalgorithm,
     sig,
     deployer,
   } = deployObj
@@ -66,13 +66,13 @@ export const verifyDeploy = deployObj => {
   const dd = new DeployData()
   dd.setTerm(term)
   dd.setTimestamp(timestamp)
-  dd.setPhloprice(phloPrice)
-  dd.setPhlolimit(phloLimit)
-  dd.setValidafterblocknumber(validAfterBlockNumber)
+  dd.setPhloprice(phloprice)
+  dd.setPhlolimit(phlolimit)
+  dd.setValidafterblocknumber(validafterblocknumber)
   const deploySerialized = dd.serializeBinary()
 
   // Signing public key to verify
-  const crypt   = new ec(sigAlgorithm)
+  const crypt   = new ec(sigalgorithm)
   const key     = crypt.keyFromPublic(deployer)
   // Hash and verify signature
   const hashed  = blake.blake2bHex(deploySerialized, void 666, 32)

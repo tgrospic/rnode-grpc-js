@@ -1,5 +1,6 @@
 import path from 'path'
 import { spawn } from 'child_process'
+import { promisify } from 'util'
 import fs from 'fs-extra'
 import Mode from 'stat-mode'
 import * as R from 'ramda'
@@ -7,6 +8,7 @@ import { parseArgs } from './args'
 import { downloadAll, fetch } from './download'
 import { generateTs } from './typings'
 import { mapAsync, chainAsync, waitExit, then, filterAsync } from '../lib'
+import which from 'which'
 
 // Relative location of directories where protobuf files are located
 // in RChain main repository https://github.com/rchain/rchain
@@ -18,11 +20,11 @@ const blue = txt => `\u001b[34m${txt}\u001b[0m`
 
 const ext = process.platform === 'win32' ? '.cmd' : ''
 
-const generateJsPb = async ({jsPath, protoPath, binPath, protoFiles}) => {
-  const npmBin = 'node_modules/.bin'
-  const protoc = path.resolve(npmBin, `grpc_tools_node_protoc${ext}`)
-  const protocPlugin = path.resolve(npmBin, `grpc_tools_node_protoc_plugin${ext}`)
+const whichP = promisify(which)
 
+const generateJsPb = async ({jsPath, protoPath, binPath, protoFiles}) => {
+  const protoc       = await whichP(`grpc_tools_node_protoc${ext}`)
+  const protocPlugin = await whichP(`grpc_tools_node_protoc_plugin${ext}`)
   const args = [
     `--js_out=import_style=commonjs:${jsPath}`,
     `--grpc_out=${jsPath}`,
@@ -38,12 +40,12 @@ const generateJsPb = async ({jsPath, protoPath, binPath, protoFiles}) => {
 }
 
 const generateJsonPb = async ({jsPath, protoFiles}) => {
-  const npmBin = 'node_modules/.bin'
-  const pbjs = path.resolve(npmBin, `pbjs${ext}`)
+  const pbjs = await whichP(`pbjs${ext}`)
   const jsonPath = `${jsPath}/pbjs_generated.json`
   const args = [
     `-t`, `json`,
     `-o`, jsonPath,
+    '--keep-case',
     ...protoFiles,
   ]
   const pbExe = spawn(pbjs, args, {stdio: 'inherit'})

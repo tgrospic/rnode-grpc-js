@@ -183,7 +183,7 @@ declare module "@tgrospic/rnode-grpc-js" {
 
   interface ApprovedBlockCandidate {
     block: BlockMessage
-    requiredSigs?: number /* int32 */
+    requiredsigs?: number /* int32 */
   }
 
   interface UnapprovedBlock {
@@ -193,7 +193,7 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface Signature {
-    publicKey?: Uint8Array /* bytes */
+    publickey?: Uint8Array /* bytes */
     algorithm?: string
     sig?: Uint8Array /* bytes */
   }
@@ -205,7 +205,7 @@ declare module "@tgrospic/rnode-grpc-js" {
 
   interface ApprovedBlock {
     candidate: ApprovedBlockCandidate
-    sigs?: Signature[]
+    sigsList?: Signature[]
   }
 
   interface ApprovedBlockRequest {
@@ -214,41 +214,41 @@ declare module "@tgrospic/rnode-grpc-js" {
 
   interface NoApprovedBlockAvailable {
     identifier?: string
-    nodeIdentifer?: string
+    nodeidentifer?: string
   }
 
   interface BlockMessage {
-    blockHash?: Uint8Array /* bytes */
+    blockhash?: Uint8Array /* bytes */
     header: Header
     body: Body
-    justifications?: Justification[]
+    justificationsList?: Justification[]
     sender?: Uint8Array /* bytes */
-    seqNum?: number /* int32 */
+    seqnum?: number /* int32 */
     sig?: Uint8Array /* bytes */
-    sigAlgorithm?: string
-    shardId?: string
-    extraBytes?: Uint8Array /* bytes */
+    sigalgorithm?: string
+    shardid?: string
+    extrabytes?: Uint8Array /* bytes */
   }
 
   interface BlockMetadataInternal {
-    blockHash?: Uint8Array /* bytes */
-    parents?: Uint8Array[] /* bytes */
+    blockhash?: Uint8Array /* bytes */
+    parentsList?: Uint8Array[] /* bytes */
     sender?: Uint8Array /* bytes */
-    justifications?: Justification[]
-    bonds?: Bond[]
-    blockNum?: number | Long /* int64 */
-    seqNum?: number /* int32 */
+    justificationsList?: Justification[]
+    bondsList?: Bond[]
+    blocknum?: number | Long /* int64 */
+    seqnum?: number /* int32 */
     invalid?: boolean /* bool */
   }
 
   interface Header {
-    parentsHashList?: Uint8Array[] /* bytes */
-    postStateHash?: Uint8Array /* bytes */
-    deploysHash?: Uint8Array /* bytes */
+    parentshashlistList?: Uint8Array[] /* bytes */
+    poststatehash?: Uint8Array /* bytes */
+    deployshash?: Uint8Array /* bytes */
     timestamp?: number | Long /* int64 */
     version?: number | Long /* int64 */
-    deployCount?: number /* int32 */
-    extraBytes?: Uint8Array /* bytes */
+    deploycount?: number /* int32 */
+    extrabytes?: Uint8Array /* bytes */
   }
 
   interface DeployData {
@@ -256,36 +256,36 @@ declare module "@tgrospic/rnode-grpc-js" {
     term?: string
     timestamp?: number | Long /* int64 */
     sig?: Uint8Array /* bytes */
-    sigAlgorithm?: string
-    phloPrice?: number | Long /* int64 */
-    phloLimit?: number | Long /* int64 */
-    validAfterBlockNumber?: number | Long /* int64 */
+    sigalgorithm?: string
+    phloprice?: number | Long /* int64 */
+    phlolimit?: number | Long /* int64 */
+    validafterblocknumber?: number | Long /* int64 */
   }
 
   interface ProcessedDeploy {
     deploy: DeployData
     cost: PCost
-    deployLog?: Event[]
-    paymentLog?: Event[]
+    deploylogList?: Event[]
+    paymentlogList?: Event[]
     errored?: boolean /* bool */
   }
 
   interface Body {
     state: RChainState
-    deploys?: ProcessedDeploy[]
-    extraBytes?: Uint8Array /* bytes */
+    deploysList?: ProcessedDeploy[]
+    extrabytes?: Uint8Array /* bytes */
   }
 
   interface Justification {
     validator?: Uint8Array /* bytes */
-    latestBlockHash?: Uint8Array /* bytes */
+    latestblockhash?: Uint8Array /* bytes */
   }
 
   interface RChainState {
-    preStateHash?: Uint8Array /* bytes */
-    postStateHash?: Uint8Array /* bytes */
-    bonds?: Bond[]
-    blockNumber?: number | Long /* int64 */
+    prestatehash?: Uint8Array /* bytes */
+    poststatehash?: Uint8Array /* bytes */
+    bondsList?: Bond[]
+    blocknumber?: number | Long /* int64 */
   }
 
   interface Event {
@@ -295,22 +295,22 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface ProduceEvent {
-    channelsHash?: Uint8Array /* bytes */
+    channelshash?: Uint8Array /* bytes */
     hash?: Uint8Array /* bytes */
     persistent?: boolean /* bool */
-    sequenceNumber?: number /* int32 */
+    sequencenumber?: number /* int32 */
   }
 
   interface ConsumeEvent {
-    channelsHashes?: Uint8Array[] /* bytes */
+    channelshashesList?: Uint8Array[] /* bytes */
     hash?: Uint8Array /* bytes */
     persistent?: boolean /* bool */
-    sequenceNumber?: number /* int32 */
+    sequencenumber?: number /* int32 */
   }
 
   interface CommEvent {
     consume: ConsumeEvent
-    produces?: ProduceEvent[]
+    producesList?: ProduceEvent[]
   }
 
   interface Bond {
@@ -319,7 +319,7 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface FindDeployQuery {
-    deployId?: Uint8Array /* bytes */
+    deployid?: Uint8Array /* bytes */
   }
 
   interface FindDeployInBlockQuery {
@@ -342,7 +342,7 @@ declare module "@tgrospic/rnode-grpc-js" {
 
   interface ContinuationAtNameQuery {
     depth?: number /* int32 */
-    names?: Par[]
+    namesList?: Par[]
   }
 
   interface DeployServiceResponse {
@@ -350,16 +350,16 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface BlockQueryResponse {
-    blockInfo: BlockInfo
+    blockinfo: BlockInfo
   }
 
   interface LightBlockQueryResponse {
-    blockInfo: LightBlockInfo
+    blockinfo: LightBlockInfo
   }
 
   interface VisualizeDagQuery {
     depth?: number /* int32 */
-    showJustificationLines?: boolean /* bool */
+    showjustificationlines?: boolean /* bool */
   }
 
   interface VisualizeBlocksResponse {
@@ -375,23 +375,23 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface ListeningNameDataResponse {
-    blockResults?: DataWithBlockInfo[]
+    blockresultsList?: DataWithBlockInfo[]
     length?: number /* int32 */
   }
 
   interface ListeningNameContinuationResponse {
-    blockResults?: ContinuationsWithBlockInfo[]
+    blockresultsList?: ContinuationsWithBlockInfo[]
     length?: number /* int32 */
   }
 
   interface PrivateNamePreviewQuery {
     user?: Uint8Array /* bytes */
     timestamp?: number | Long /* int64 */
-    nameQty?: number /* int32 */
+    nameqty?: number /* int32 */
   }
 
   interface PrivateNamePreviewResponse {
-    ids?: Uint8Array[] /* bytes */
+    idsList?: Uint8Array[] /* bytes */
   }
 
   interface LastFinalizedBlockQuery {
@@ -399,57 +399,57 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface LastFinalizedBlockResponse {
-    blockInfo: BlockInfo
+    blockinfo: BlockInfo
   }
 
   interface LightBlockInfo {
-    blockHash?: string
-    blockSize?: string
-    blockNumber?: number | Long /* int64 */
+    blockhash?: string
+    blocksize?: string
+    blocknumber?: number | Long /* int64 */
     version?: number | Long /* int64 */
-    deployCount?: number /* int32 */
-    tupleSpaceHash?: string
+    deploycount?: number /* int32 */
+    tuplespacehash?: string
     timestamp?: number | Long /* int64 */
-    faultTolerance?: number /* float */
-    mainParentHash?: string
-    parentsHashList?: string[]
+    faulttolerance?: number /* float */
+    mainparenthash?: string
+    parentshashlistList?: string[]
     sender?: string
   }
 
   interface BlockInfo {
-    blockHash?: string
-    blockSize?: string
-    blockNumber?: number | Long /* int64 */
+    blockhash?: string
+    blocksize?: string
+    blocknumber?: number | Long /* int64 */
     version?: number | Long /* int64 */
-    deployCount?: number /* int32 */
-    tupleSpaceHash?: string
+    deploycount?: number /* int32 */
+    tuplespacehash?: string
     timestamp?: number | Long /* int64 */
-    faultTolerance?: number /* float */
-    mainParentHash?: string
-    parentsHashList?: string[]
+    faulttolerance?: number /* float */
+    mainparenthash?: string
+    parentshashlistList?: string[]
     sender?: string
-    shardId?: string
-    bondsValidatorList?: string[]
-    deployCost?: string[]
+    shardid?: string
+    bondsvalidatorlistList?: string[]
+    deploycostList?: string[]
   }
 
   interface DataWithBlockInfo {
-    postBlockData?: Par[]
+    postblockdataList?: Par[]
     block: LightBlockInfo
   }
 
   interface ContinuationsWithBlockInfo {
-    postBlockContinuations?: WaitingContinuationInfo[]
+    postblockcontinuationsList?: WaitingContinuationInfo[]
     block: LightBlockInfo
   }
 
   interface WaitingContinuationInfo {
-    postBlockPatterns?: BindPattern[]
-    postBlockContinuation: Par
+    postblockpatternsList?: BindPattern[]
+    postblockcontinuation: Par
   }
 
   interface PrintUnmatchedSendsQuery {
-    printUnmatchedSends?: boolean /* bool */
+    printunmatchedsends?: boolean /* bool */
   }
 
   interface CmdRequest {
@@ -458,7 +458,7 @@ declare module "@tgrospic/rnode-grpc-js" {
 
   interface EvalRequest {
     program?: string
-    printUnmatchedSendsOnly?: boolean /* bool */
+    printunmatchedsendsonly?: boolean /* bool */
   }
 
   interface ReplResponse {
@@ -466,15 +466,15 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface Par {
-    sends?: Send[]
-    receives?: Receive[]
-    news?: New[]
-    exprs?: Expr[]
-    matches?: Match[]
-    unforgeables?: GUnforgeable[]
-    bundles?: Bundle[]
-    connectives?: Connective[]
-    locallyFree?: Uint8Array /* bytes */
+    sendsList?: Send[]
+    receivesList?: Receive[]
+    newsList?: New[]
+    exprsList?: Expr[]
+    matchesList?: Match[]
+    unforgeablesList?: GUnforgeable[]
+    bundlesList?: Bundle[]
+    connectivesList?: Connective[]
+    locallyfree?: Uint8Array /* bytes */
     connectiveUsed?: boolean /* bool */
   }
 
@@ -485,7 +485,7 @@ declare module "@tgrospic/rnode-grpc-js" {
 
   interface ParWithRandom {
     body: Par
-    randomState?: Uint8Array /* bytes */
+    randomstate?: Uint8Array /* bytes */
   }
 
   interface PCost {
@@ -493,8 +493,8 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface ListParWithRandom {
-    pars?: Par[]
-    randomState?: Uint8Array /* bytes */
+    parsList?: Par[]
+    randomstate?: Uint8Array /* bytes */
   }
 
   interface Var {
@@ -505,64 +505,64 @@ declare module "@tgrospic/rnode-grpc-js" {
 
   interface Bundle {
     body: Par
-    writeFlag?: boolean /* bool */
-    readFlag?: boolean /* bool */
+    writeflag?: boolean /* bool */
+    readflag?: boolean /* bool */
   }
 
   interface Send {
     chan: Par
-    data?: Par[]
+    dataList?: Par[]
     persistent?: boolean /* bool */
-    locallyFree?: Uint8Array /* bytes */
+    locallyfree?: Uint8Array /* bytes */
     connectiveUsed?: boolean /* bool */
   }
 
   interface ReceiveBind {
-    patterns?: Par[]
+    patternsList?: Par[]
     source: Par
     remainder: Var
-    freeCount?: number /* int32 */
+    freecount?: number /* int32 */
   }
 
   interface BindPattern {
-    patterns?: Par[]
+    patternsList?: Par[]
     remainder: Var
-    freeCount?: number /* int32 */
+    freecount?: number /* int32 */
   }
 
   interface ListBindPatterns {
-    patterns?: BindPattern[]
+    patternsList?: BindPattern[]
   }
 
   interface Receive {
-    binds?: ReceiveBind[]
+    bindsList?: ReceiveBind[]
     body: Par
     persistent?: boolean /* bool */
     peek?: boolean /* bool */
-    bindCount?: number /* int32 */
-    locallyFree?: Uint8Array /* bytes */
+    bindcount?: number /* int32 */
+    locallyfree?: Uint8Array /* bytes */
     connectiveUsed?: boolean /* bool */
   }
 
   interface New {
-    bindCount?: number /* sint32 */
+    bindcount?: number /* sint32 */
     p: Par
-    uri?: string[]
-    deployId: DeployId
-    deployerId: DeployerId
-    locallyFree?: Uint8Array /* bytes */
+    uriList?: string[]
+    deployid: DeployId
+    deployerid: DeployerId
+    locallyfree?: Uint8Array /* bytes */
   }
 
   interface MatchCase {
     pattern: Par
     source: Par
-    freeCount?: number /* int32 */
+    freecount?: number /* int32 */
   }
 
   interface Match {
     target: Par
-    cases?: MatchCase[]
-    locallyFree?: Uint8Array /* bytes */
+    casesList?: MatchCase[]
+    locallyfree?: Uint8Array /* bytes */
     connectiveUsed?: boolean /* bool */
   }
 
@@ -600,37 +600,37 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface EList {
-    ps?: Par[]
-    locallyFree?: Uint8Array /* bytes */
+    psList?: Par[]
+    locallyfree?: Uint8Array /* bytes */
     connectiveUsed?: boolean /* bool */
     remainder: Var
   }
 
   interface ETuple {
-    ps?: Par[]
-    locallyFree?: Uint8Array /* bytes */
+    psList?: Par[]
+    locallyfree?: Uint8Array /* bytes */
     connectiveUsed?: boolean /* bool */
   }
 
   interface ESet {
-    ps?: Par[]
-    locallyFree?: Uint8Array /* bytes */
+    psList?: Par[]
+    locallyfree?: Uint8Array /* bytes */
     connectiveUsed?: boolean /* bool */
     remainder: Var
   }
 
   interface EMap {
-    kvs?: KeyValuePair[]
-    locallyFree?: Uint8Array /* bytes */
+    kvsList?: KeyValuePair[]
+    locallyfree?: Uint8Array /* bytes */
     connectiveUsed?: boolean /* bool */
     remainder: Var
   }
 
   interface EMethod {
-    methodName?: string
+    methodname?: string
     target: Par
-    arguments?: Par[]
-    locallyFree?: Uint8Array /* bytes */
+    argumentsList?: Par[]
+    locallyfree?: Uint8Array /* bytes */
     connectiveUsed?: boolean /* bool */
   }
 
@@ -754,7 +754,7 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface ConnectiveBody {
-    ps?: Par[]
+    psList?: Par[]
   }
 
   interface DeployId {
@@ -762,7 +762,7 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface DeployerId {
-    publicKey?: Uint8Array /* bytes */
+    publickey?: Uint8Array /* bytes */
   }
 
   interface GUnforgeable {
@@ -780,7 +780,7 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface GDeployerId {
-    publicKey?: Uint8Array /* bytes */
+    publickey?: Uint8Array /* bytes */
   }
 
   interface EitherAny {
@@ -789,7 +789,7 @@ declare module "@tgrospic/rnode-grpc-js" {
   }
 
   interface EitherError {
-    messages?: string[]
+    messagesList?: string[]
   }
 
   interface EitherSuccess {

@@ -55,29 +55,27 @@ const fillObject = R.curry((getType, reqTypeName, input) => {
   const type = getType(reqTypeName)
   if (!type) throw Error(`Request type not found: ${reqTypeName}`)
   const req = new type.constructor()
-  Object.entries(input || {}).forEach(([k, v]) => {
-    const genKey = k.replace(/_(\S)/g, (_, x) => x.toUpperCase())
-    const field = type.def.fields[genKey]
+  Object.entries(input || {}).forEach(([key, v]) => {
+    const field = type.def.fields[key]
     if (!field) {
-      warn(`Property not found: ${reqTypeName}.${k}`)
+      warn(`Property not found: ${reqTypeName}.${key}`)
       return
     }
 
     // Handle collections (proto repeated)
     const isListType = field.rule === 'repeated'
-    const setterSuffix = isListType ? `List` : ''
-    const [fst, snd, ...tail] = genKey
+    const [fst, snd, ...tail] = key
     const setterName = f => R.flatten(
-      ['set', fst.toUpperCase(), snd, f(tail.join('')), setterSuffix]
+      ['set', fst.toUpperCase(), snd, f(tail.join(''))]
     ).join('')
     const setter = req[setterName(R.identity)] || req[setterName(R.toLower)]
     !setter && warn(
-      `Property setter not found ${reqTypeName}.${k} (<gen-js>.${setterName(R.identity)})`
+      `Property setter not found ${reqTypeName}.${key} (<gen-js>.${setterName(R.identity)})`
     )
 
     // Create property value / recursively resolve complex types
     const val =
-      ~simpleTypes.indexOf(field.type)
+      R.includes(field.type, simpleTypes)
         // Simple type
         ? v
         // Complex type

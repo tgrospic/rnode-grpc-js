@@ -32,10 +32,23 @@ export const flattenSchema = parentPath => schema => {
       if (methods)
         return { namespace, type: 'service', name, methods }
       else if (fields) {
+        // Fix fields names the same way as protoc JS generator
+        const fixName = name => {
+          const { rule } = fields[name]
+          const isList = rule === 'repeated'
+          const listSuffix = isList ? 'List' : ''
+          const genName = name.toLowerCase().replace(/_(\S)/g, (_, x) => x.toUpperCase())
+          return `${genName}${listSuffix}`
+        }
+        const fixFieldName = (acc, [k, v]) => {
+          const fieldName = fixName(k)
+          return {...acc, [fieldName]: v}
+        }
+        const fieldsFixed = R.pipe(Object.entries, R.reduce(fixFieldName, {}))
         const nullables = R.pipe(
-          R.propOr({}, 'oneofs'), Object.values, R.chain(R.prop('oneof'))
+          R.propOr({}, 'oneofs'), Object.values, R.chain(R.prop('oneof')), R.map(fixName)
         )(v)
-        return { namespace, type: 'type', name, fields, nullables }
+        return { namespace, type: 'type', name, fields: fieldsFixed(fields), nullables }
       }
       else if (nested)
         return R.chain(flattenSchema([...parentPath, name]), [v])
