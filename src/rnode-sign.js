@@ -13,7 +13,7 @@ export const signDeploy = (privateKey, deployObj) => {
     timestamp = new Date().getTime(),
     phloprice,
     phlolimit,
-    validafterblocknumber,
+    validafterblocknumber = -1,
     sigalgorithm = 'secp256k1',
   } = deployObj
 
