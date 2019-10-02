@@ -7,6 +7,14 @@ import { ec } from 'elliptic'
 const getSignKey = (crypt, pk) =>
   R.is(Function, pk.sign) ? pk : crypt.keyFromPrivate(pk)
 
+// Get DeployData contructor from global proto object
+const getDeployDataConstructor = () => {
+  const { DeployData, DeployDataProto } = proto.coop.rchain.casper.protocol
+  // v0.9.12 - DeployData
+  // v0.9.14 - DeployDataProto
+  return DeployDataProto || DeployData
+}
+
 export const signDeploy = (privateKey, deployObj) => {
   const {
     term,
@@ -18,7 +26,7 @@ export const signDeploy = (privateKey, deployObj) => {
   } = deployObj
 
   // Get DeployData contructor from global proto object
-  const { DeployData } = proto.coop.rchain.casper.protocol
+  const DeployData = getDeployDataConstructor()
 
   // Serialize deploy data for signing
   const dd = new DeployData()
@@ -60,7 +68,7 @@ export const verifyDeploy = deployObj => {
   } = deployObj
 
   // Get DeployData contructor from global proto object
-  const { DeployData } = proto.coop.rchain.casper.protocol
+  const DeployData = getDeployDataConstructor()
 
   // Serialize deploy data for signing
   const dd = new DeployData()
