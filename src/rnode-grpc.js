@@ -46,8 +46,23 @@ const resolveEither = eitherMsg => {
   }
 }
 
-const responseToObject = (responseType, msg) =>
-  responseType === 'Either' ? resolveEither(msg) : msg.toObject()
+const responseToObject = (responseType, msg, getType) => {
+  if (responseType === 'Either') {
+    return resolveEither(msg)
+  }
+
+  // Detect errors inside message
+  const msgObj = msg.toObject()
+  const respTypeDef = getType(responseType)
+  const errorTypeLens = R.lensPath('def.fields.error.type'.split('.'))
+  const errorType = R.view(errorTypeLens, respTypeDef)
+
+  // Throw message errors (ServiceError)
+  if (errorType === 'ServiceError' && msgObj.error) {
+    throw Error(`Service error: ${msgObj.error.messagesList.join(', ')}`)
+  }
+  return msg.toObject()
+}
 
 const simpleTypes = R.map(R.prop('proto'), protoTsTypesMapping)
 
@@ -105,7 +120,7 @@ const createApiMethod = R.curry((service, getType, method, name) => async (input
     return new Promise((resolve, reject) => {
       call.on('data', resultMsg => {
         try {
-          const result = responseToObject(method.responseType, resultMsg)
+          const result = responseToObject(method.responseType, resultMsg, getType)
           streamResult.push(result)
         } catch (err) { reject(err) }
       })
@@ -119,7 +134,7 @@ const createApiMethod = R.curry((service, getType, method, name) => async (input
         else {
           try {
             // Resolve Either value
-            const result = responseToObject(method.responseType, resultMsg)
+            const result = responseToObject(method.responseType, resultMsg, getType)
             resolve(result)
           } catch (err) { reject(err) }
         }

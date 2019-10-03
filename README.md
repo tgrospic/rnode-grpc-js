@@ -80,10 +80,10 @@ rnodePropose(proposeClient, { protoSchema }): ProposeService
 rnodeRepl(replClient, { protoSchema }): Repl
 
 // Sign deploy data
-signDeploy(key: string | Uint8Array | Buffer | ec.KeyPair, deploy: UnsignedDeployData): DeployData
+signDeploy(key: string | Uint8Array | Buffer | ec.KeyPair, deploy: UnsignedDeployData): DeployDataProto
 
 // Verify deploy signature
-verifyDeploy(deploy: DeployData): Boolean
+verifyDeploy(deploy: DeployDataProto): Boolean
 
 // Protobuf serialize / deserialize operations
 rnodeProtobuf(protoSchema): TypesBinary
@@ -97,7 +97,7 @@ Here is an example of [TypeScript definition file](docs/rnode-grpc-js-v0.9.12.d.
 # Run CLI command with an option to specify RNode version (Git repo release tag)
 rnode-grpc --rnode-version v0.9.12
 ```
-Generated TypeScript definitions are complete with _dynamic_ `Either` type converted to `Promise<T>` type. All the plumbing is done by the library. :smile:
+Generated TypeScript definitions are complete with the conversion of response errors inside the message to `Promise` errors. For RNode after `v0.9.14` version `ServiceError` type is converted and on previous versions the same conversion is done on a _dynamic_ `Either` type. :smile:
 
 ```typescript
 // Typescipt generated interface from RNode v0.9.12 protbuf definitions
@@ -129,9 +129,13 @@ import { ec } from 'elliptic'
 import { rnodeDeploy, rnodePropose, signDeploy, verifyDeploy } from '@tgrospic/rnode-grpc-js'
 
 // Generated files with rnode-grpc-js tool
+import protoSchema from '../../rnode-grpc-gen/js/pbjs_generated.json'
+// <= v0.9.14 RNode
 import { DeployServiceClient } from '../../rnode-grpc-gen/js/DeployService_grpc_web_pb'
 import { ProposeServiceClient } from '../../rnode-grpc-gen/js/ProposeService_grpc_web_pb'
-import protoSchema from '../../rnode-grpc-gen/js/pbjs_generated.json'
+// > v0.9.14 RNode
+import { DeployServiceClient } from '../../rnode-grpc-gen/js/DeployServiceV1_grpc_web_pb'
+import { ProposeServiceClient } from '../../rnode-grpc-gen/js/ProposeServiceV1_grpc_web_pb'
 
 // RNode validator address (or any read-only RNode if we don't use _deploy_ and _propose_)
 const rnodeExternalUrl = 'https://testnet-0.grpc.rchain.isotypic.com'
@@ -187,11 +191,11 @@ const protoSchema = require('../../rnode-grpc-gen/js/pbjs_generated.json')
 const { rnodeProtobuf } = require('@tgrospic/rnode-grpc-js')
 
 // Get types with serialize and deserialize operations
-const { DeployData, CmdRequest } = rnodeProtobuf({ protoSchema })
+const { DeployDataProto, CmdRequest } = rnodeProtobuf({ protoSchema })
 
-const deployBytes = DeployData.serialize({ term: 'Nil', phloLimit: 1000 })
+const deployBytes = DeployDataProto.serialize({ term: 'Nil', phloLimit: 1000 })
 
-const deployObj: DeployData = DeployData.deserialize(deployBytes)
+const deployObj: DeployDataProto = DeployDataProto.deserialize(deployBytes)
 ```
 
 ## What is the difference with RChain-API?

@@ -88,9 +88,11 @@ const fieldCodeGen = (nullables, key, {type, rule}) => {
 // Generates code for type interface
 const typeCodeGen = ({name, fields, nullables}) => {
   const fieldGenKV = ([k, field]) => fieldCodeGen(nullables, k, field)
+  const isServiceError = ([k, {type}]) => k === 'error' && type === 'ServiceError'
+  const genFields = R.pipe(Object.entries, R.reject(isServiceError), R.map(fieldGenKV))
   // Indentation is important, it's used in generated file
   return `interface ${name} {
-    ${Object.entries(fields).map(fieldGenKV).join('\n    ')}
+    ${genFields(fields).join('\n    ')}
   }`
 }
 

@@ -9,7 +9,10 @@ const getSignKey = (crypt, pk) =>
 
 // Get DeployData contructor from global proto object
 const getDeployDataConstructor = () => {
-  const { DeployData, DeployDataProto } = proto.coop.rchain.casper.protocol
+  const { DeployDataProto, DeployData } =
+    proto.casper
+      ? proto.casper
+      : proto.coop.rchain.casper.protocol
   // v0.9.12 - DeployData
   // v0.9.14 - DeployDataProto
   return DeployDataProto || DeployData

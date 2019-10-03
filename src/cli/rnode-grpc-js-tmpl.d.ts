@@ -5,7 +5,7 @@ declare module "@tgrospic/rnode-grpc-js" {
    * Example how to instantiate RNode client generated with **rnode-grpc-js** tool.
    * ```typescript
    * // Generated browser client
-   * const { DeployServiceClient } = require('../../rnode-grpc-gen/js/DeployService_grpc_web_pb')
+   * const { DeployServiceClient } = require('../../rnode-grpc-gen/js/DeployServiceV1_grpc_pb')
    * // Service instance / endpoint
    * const deployClient = new DeployServiceClient('https://testnet-0.grpc.rchain.isotypic.com')
    *
@@ -30,7 +30,7 @@ declare module "@tgrospic/rnode-grpc-js" {
    * Example how to instantiate RNode client generated with **rnode-grpc-js** tool.
    * ```typescript
    * // Generated browser client
-   * const { ProposeServiceClient } = require('../../rnode-grpc-gen/js/ProposeService_grpc_pb')
+   * const { ProposeServiceClient } = require('../../rnode-grpc-gen/js/ProposeServiceV1_grpc_pb')
    * // Client instance / endpoint
    * const proposeClient = new ProposeServiceClient('https://testnet-0.grpc.rchain.isotypic.com')
    *
@@ -77,8 +77,8 @@ declare module "@tgrospic/rnode-grpc-js" {
    * Example how to instantiate RNode client generated with **rnode-grpc-js** tool.
    * ```typescript
    * // Generated browser clients
-   * const { DeployServiceClient } = require('../../rnode-grpc-gen/js/DeployService_grpc_web_pb')
-   * const { ProposeServiceClient } = require('../../rnode-grpc-gen/js/ProposeService_grpc_web_pb')
+   * const { DeployServiceClient } = require('../../rnode-grpc-gen/js/DeployServiceV1_grpc_pb')
+   * const { ProposeServiceClient } = require('../../rnode-grpc-gen/js/ProposeServiceV1_grpc_pb')
    * // Client instances / endpoints
    * const deployClient = new DeployServiceClient('https://testnet-0.grpc.rchain.isotypic.com')
    * const proposeClient = new ProposeServiceClient('https://testnet-0.grpc.rchain.isotypic.com')
@@ -116,12 +116,12 @@ declare module "@tgrospic/rnode-grpc-js" {
    * const signed = signDeploy(key, deployData)
    * ```
    */
-  export function signDeploy(key: string | Uint8Array | Buffer | ec.KeyPair, deploy: UnsignedDeployData): DeployData
+  export function signDeploy(key: string | Uint8Array | Buffer | ec.KeyPair, deploy: UnsignedDeployData): DeployDataProto
 
   /**
    * Verifies deploy for a valid signature.
    */
-  export function verifyDeploy(deploy: DeployData): Boolean
+  export function verifyDeploy(deploy: DeployDataProto): Boolean
 
   /**
    * Protobuf serialize / deserialize operations.
@@ -138,9 +138,9 @@ declare module "@tgrospic/rnode-grpc-js" {
   interface UnsignedDeployData {
     term: String
     timestamp?: Number | Long
-    phloLimit: Number | Long
-    phloPrice?: Number | Long
-    validAfterBlockNumber?: Number | Long
+    phlolimit: Number | Long
+    phloprice?: Number | Long
+    validafterblocknumber?: Number | Long
   }
 
   /*__TYPES__*/

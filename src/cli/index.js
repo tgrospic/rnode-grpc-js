@@ -8,7 +8,6 @@ import { parseArgs } from './args'
 import { downloadAll, fetch } from './download'
 import { generateTs } from './typings'
 import { mapAsync, chainAsync, waitExit, then, filterAsync } from '../lib'
-import which from 'which'
 
 // Relative location of directories where protobuf files are located
 // in RChain main repository https://github.com/rchain/rchain
@@ -20,11 +19,11 @@ const blue = txt => `\u001b[34m${txt}\u001b[0m`
 
 const ext = process.platform === 'win32' ? '.cmd' : ''
 
-const whichP = promisify(which)
+const npmBin = 'node_modules/.bin'
 
 const generateJsPb = async ({jsPath, protoPath, binPath, protoFiles}) => {
-  const protoc       = await whichP(`grpc_tools_node_protoc${ext}`)
-  const protocPlugin = await whichP(`grpc_tools_node_protoc_plugin${ext}`)
+  const protoc = path.resolve(npmBin, `grpc_tools_node_protoc${ext}`)
+  const protocPlugin = path.resolve(npmBin, `grpc_tools_node_protoc_plugin${ext}`)
   const args = [
     `--js_out=import_style=commonjs:${jsPath}`,
     `--grpc_out=${jsPath}`,
@@ -40,7 +39,7 @@ const generateJsPb = async ({jsPath, protoPath, binPath, protoFiles}) => {
 }
 
 const generateJsonPb = async ({jsPath, protoFiles}) => {
-  const pbjs = await whichP(`pbjs${ext}`)
+  const pbjs = path.resolve(npmBin, `pbjs${ext}`)
   const jsonPath = `${jsPath}/pbjs_generated.json`
   const args = [
     `-t`, `json`,

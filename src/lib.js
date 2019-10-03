@@ -18,7 +18,8 @@ export const protoTsTypesMapping = [
 const ignoredNamespaces = [
   ['scalapb'],
   ['google', 'protobuf'],
-  ["coop", "rchain", "comm", "protocol", "routing"]
+  ["coop", "rchain", "comm", "protocol", "routing"],  // v0.9.12
+  ["routing"],                                        // v0.9.14
 ]
 
 // Transform generated (protobufjs) JSON to a flat list of services and types
