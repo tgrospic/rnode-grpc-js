@@ -51,6 +51,7 @@ export const run = async ({args, cwd}) => {
   const {
     'rnode-version': version='v0.9.12',
     'gen-dir': genDirRel='rnode-grpc-gen',
+    'include-reflection': includeReflection=false,
   } = options
 
   log(blue('RNode gRPC versions'), { 'rnode-version': version })
@@ -81,12 +82,18 @@ export const run = async ({args, cwd}) => {
     filePath: path.resolve(scalapbPath, 'scalapb.proto'),
   }
 
+  const reflectionDownload = {
+    downloadUrl: 'https://raw.githubusercontent.com/grpc/grpc/v1.24.1/src/proto/grpc/reflection/v1alpha/reflection.proto',
+    filePath: path.resolve(protoPath, 'reflection.proto'),
+  }
+
   // Fetch info of all proto files
   const protoDownloads = await R.pipe(
     chainAsync(fetchProtoListFromGithub),
     filterAsync(({name}) => name !== 'routing.proto'),
     mapAsync(protoDownload),
     then(R.append(scalapbDownload)),
+    then(includeReflection ? R.append(reflectionDownload) : R.identity),
   )(rchainProtoDirs)
 
   // Cleanup existing files and ensure directory structure
