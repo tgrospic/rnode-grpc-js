@@ -1,8 +1,6 @@
 import path from 'path'
 import { spawn } from 'child_process'
-import { promisify } from 'util'
 import fs from 'fs-extra'
-import Mode from 'stat-mode'
 import * as R from 'ramda'
 import { parseArgs } from './args'
 import { downloadAll, fetch } from './download'
@@ -21,15 +19,10 @@ const ext = process.platform === 'win32' ? '.cmd' : ''
 
 const npmBin = 'node_modules/.bin'
 
-const generateJsPb = async ({jsPath, protoPath, binPath, protoFiles}) => {
+const generateJsPb = async ({jsPath, protoPath, protoFiles}) => {
   const protoc = path.resolve(npmBin, `grpc_tools_node_protoc${ext}`)
-  const protocPlugin = path.resolve(npmBin, `grpc_tools_node_protoc_plugin${ext}`)
   const args = [
     `--js_out=import_style=commonjs:${jsPath}`,
-    `--grpc_out=${jsPath}`,
-    `--grpc-web_out=import_style=commonjs,mode=grpcweb:${jsPath}`,
-    `--plugin=protoc-gen-grpc=${protocPlugin}`,
-    `--plugin=${binPath}/protoc-gen-grpc-web`,
     `-I${protoPath}`,
     ...protoFiles,
   ]
@@ -57,28 +50,16 @@ export const run = async ({args, cwd}) => {
   const options = parseArgs(args)
   const {
     'rnode-version': version='v0.9.12',
-    'grpc-web-version': grpcWebVersion='1.0.6',
     'gen-dir': genDirRel='rnode-grpc-gen',
   } = options
 
-  log(blue('RNode gRPC versions'), { 'rnode-version': version, 'grpc-web-version': grpcWebVersion })
+  log(blue('RNode gRPC versions'), { 'rnode-version': version })
 
   // Directory paths
   const dirPath = path.resolve(cwd, genDirRel)
   const protoPath = path.resolve(dirPath, 'proto')
   const scalapbPath = path.resolve(protoPath, 'scalapb')
-  const binPath = path.resolve(dirPath, 'bin')
   const jsPath = path.resolve(dirPath, 'js')
-
-  // Protoc `grpc-web` plugin download params
-  const grpcWebUrlPrefix = 'https://github.com/grpc/grpc-web/releases/download/'
-  const [platformName, ext] = process.platform === 'win32'
-    ? ['windows', '.exe'] : [process.platform, '']
-  // Resolve `protoc-gen-grpc-web` file name
-  const grpcWebFileName = `protoc-gen-grpc-web-${grpcWebVersion}-${platformName}-x86_64${ext}`
-  const filePath = path.resolve(binPath, 'protoc-gen-grpc-web')
-  const downloadUrl = grpcWebUrlPrefix + grpcWebVersion + '/' + grpcWebFileName
-  const grpcWebDownload = { filePath, downloadUrl }
 
   // Get proto files with Github API
   const githubListFilesUrl = dir =>
@@ -108,37 +89,22 @@ export const run = async ({args, cwd}) => {
     then(R.append(scalapbDownload)),
   )(rchainProtoDirs)
 
-  // All downloads
-  const downloads = [
-    grpcWebDownload,
-    ...protoDownloads,
-  ]
-
   // Cleanup existing files and ensure directory structure
-  const newDirs = [protoPath, scalapbPath, binPath, jsPath]
+  const newDirs = [protoPath, scalapbPath, jsPath]
   await fs.remove(dirPath)
   await mapAsync(fs.ensureDir, newDirs)
 
   log(blue('Startinmg downloads...'))
 
   // Download all files
-  await downloadAll(downloads)
-
-  // Set `protoc-gen-grpc-web` plugin executable
-  const stat = await fs.stat(filePath)
-  const mode = Mode(stat)
-  mode.owner.execute = true
-  mode.group.execute = true
-  mode.others.execute = true
-
-  await fs.chmod(filePath, mode.stat.mode)
+  await downloadAll(protoDownloads)
 
   log(blue('Generating JS files...'))
 
   const protoFiles = R.map(R.prop('filePath'), protoDownloads)
 
   // Generate JS code from proto files (with grpc-tools)
-  await generateJsPb({jsPath, protoPath, binPath, protoFiles})
+  await generateJsPb({jsPath, protoPath, protoFiles})
 
   // Generate JSON definition from proto files (with protobufjs)
   const jsonPath = await generateJsonPb({jsPath, protoFiles})

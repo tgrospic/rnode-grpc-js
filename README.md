@@ -16,7 +16,8 @@ Example of [Envoy configuration](https://github.com/grpc/grpc-web/blob/952d0f586
 npm install @tgrospic/rnode-grpc-js
 
 # gRPC and protobuf for use with Nodejs
-npm install google-protobuf grpc
+# - compatible with native `grpc` package
+npm install google-protobuf @grpc/grpc-js
 # Or for use with the browser (via Envoy proxy)
 npm install google-protobuf grpc-web
 
@@ -50,7 +51,6 @@ node_modules/.bin/rnode-grpc
 | -------------------| ------------------ | ------------
 | --rnode-version    | `v0.9.12`          | Version (repo tag) of RNode to generate API.
 | --gen-dir          | `./rnode-grpc-gen` | Path to output directory.
-| --grpc-web-version | `1.0.6`            | Version of [protoc-gen-grpc-web](https://github.com/grpc/grpc-web/tree/513a578f7f454593c9c238377f56b4c6f4ff04d8/packages/grpc-web#quick-start) _protoc_ plugin.
 
 We can generate API from not yet published RNode version. E.g. `dev` branch.
 
@@ -71,13 +71,13 @@ interface DeployService {
 
 ```typescript
 // Get deploy service methods
-rnodeDeploy(deployClient, { protoSchema }): DeployService
+rnodeDeploy(opt: Options): DeployService
 
 // Get propose service methods
-rnodePropose(proposeClient, { protoSchema }): ProposeService
+rnodePropose(opt: Options): ProposeService
 
 // Get repl service methods
-rnodeRepl(replClient, { protoSchema }): Repl
+rnodeRepl(opt: Options): Repl
 
 // Sign deploy data
 signDeploy(key: string | Uint8Array | Buffer | ec.KeyPair, deploy: UnsignedDeployData): DeployDataProto
@@ -86,7 +86,7 @@ signDeploy(key: string | Uint8Array | Buffer | ec.KeyPair, deploy: UnsignedDeplo
 verifyDeploy(deploy: DeployDataProto): Boolean
 
 // Protobuf serialize / deserialize operations
-rnodeProtobuf(protoSchema): TypesBinary
+rnodeProtobuf({protoSchema}): TypesBinary
 ```
 
 ### TypeScript definitions
@@ -124,29 +124,32 @@ Code assumes running Envoy proxy to convert gRPC to HTTP requests. At the bottom
 Working version of this example can be found here [@tgrospic/rnode-client-js/src/web/index.js](https://github.com/tgrospic/rnode-client-js/blob/master/src/web/index.js).
 
 ```typescript
-/// <reference path="../../rnode-grpc-gen/js/rnode-grpc-js.d.ts" />
+/// <reference path="../rnode-grpc-gen/js/rnode-grpc-js.d.ts" />
 import { ec } from 'elliptic'
-import { rnodeDeploy, rnodePropose, signDeploy, verifyDeploy } from '@tgrospic/rnode-grpc-js'
+import { rnodeDeploy, rnodePropose, signDeploy, verifyDeploy, LightBlockInfo } from '@tgrospic/rnode-grpc-js'
 
 // Generated files with rnode-grpc-js tool
-import protoSchema from '../../rnode-grpc-gen/js/pbjs_generated.json'
-// <= v0.9.14 RNode
-import { DeployServiceClient } from '../../rnode-grpc-gen/js/DeployService_grpc_web_pb'
-import { ProposeServiceClient } from '../../rnode-grpc-gen/js/ProposeService_grpc_web_pb'
-// > v0.9.14 RNode
-import { DeployServiceClient } from '../../rnode-grpc-gen/js/DeployServiceV1_grpc_web_pb'
-import { ProposeServiceClient } from '../../rnode-grpc-gen/js/ProposeServiceV1_grpc_web_pb'
+import protoSchema from '../rnode-grpc-gen/js/pbjs_generated.json'
+// <= v0.9.14 RNode - import generated protobuf types (in global scope)
+import '../rnode-grpc-gen/js/DeployService_pb'
+import '../rnode-grpc-gen/js/ProposeService_pb'
+// > v0.9.14 RNode - import generated protobuf types (in global scope)
+import '../rnode-grpc-gen/js/DeployServiceV1_pb'
+import '../rnode-grpc-gen/js/ProposeServiceV1_pb'
 
 // RNode validator address (or any read-only RNode if we don't use _deploy_ and _propose_)
 const rnodeExternalUrl = 'https://testnet-0.grpc.rchain.isotypic.com'
 
 // Instantiate http clients
-const deployClient = new DeployServiceClient(rnodeExternalUrl)
-const proposeClient = new ProposeServiceClient(rnodeExternalUrl)
+const options = {
+  client: new grpcWeb.GrpcWebClientBase({format: 'binary'}),
+  host: rnodeUrl,
+  protoSchema,
+}
 
 // Get RNode service methods
-const { getBlocks, DoDeploy } = rnodeDeploy(deployClient, { protoSchema })
-const { propose } = rnodePropose(proposeClient, { protoSchema })
+const { getBlocks, DoDeploy } = rnodeDeploy(options)
+const { propose } = rnodePropose(options)
 
 // Get blocks from RNode
 const blocks: LightBlockInfo[] = await getBlocks({ depth: 2 })
@@ -160,7 +163,7 @@ const key = secp256k1.genKeyPair()
 // Sample Rholang code we want to deploy
 const deployData = {
   term: 'new out(`rho:io:stdout`) in { out!("Browser deploy test") }',
-  phloLimit: 10e3,
+  phlolimit: 10e3,
 }
 
 // Helper function to sign a deploy
@@ -180,20 +183,20 @@ await propose()
 #### Protobuf serialize and deserialize operations
 
 ```typescript
-/// <reference path="../../rnode-grpc-gen/js/rnode-grpc-js.d.ts" />
+/// <reference path="../rnode-grpc-gen/js/rnode-grpc-js.d.ts" />
 // Generated protobuf files must be loaded to instantiate a global proto object
 // needed for `rnodeProtobuf`
-require('../../rnode-grpc-gen/js/DeployService_pb')
-require('../../rnode-grpc-gen/js/ProposeService_pb')
-require('../../rnode-grpc-gen/js/repl_pb')
-const protoSchema = require('../../rnode-grpc-gen/js/pbjs_generated.json')
+require('../rnode-grpc-gen/js/DeployService_pb')
+require('../rnode-grpc-gen/js/ProposeService_pb')
+require('../rnode-grpc-gen/js/repl_pb')
+const protoSchema = require('../rnode-grpc-gen/js/pbjs_generated.json')
 
 const { rnodeProtobuf } = require('@tgrospic/rnode-grpc-js')
 
 // Get types with serialize and deserialize operations
 const { DeployDataProto, CmdRequest } = rnodeProtobuf({ protoSchema })
 
-const deployBytes = DeployDataProto.serialize({ term: 'Nil', phloLimit: 1000 })
+const deployBytes = DeployDataProto.serialize({ term: 'Nil', phlolimit: 1000 })
 
 const deployObj: DeployDataProto = DeployDataProto.deserialize(deployBytes)
 ```

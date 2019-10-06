@@ -1,99 +1,131 @@
 declare module "@tgrospic/rnode-grpc-js" {
   import { ec } from 'elliptic'
 
+  interface Options {
+    // Client created with:
+    // - `@grpc/grpc-js` (class Client)
+    // - `grpc-web` (class GrpcWebClientBase)
+    client: any
+    // RNode url
+    host?: string
+    // Generated JSON schema
+    protoSchema: Object
+  }
+
   /**
    * Example how to instantiate RNode client generated with **rnode-grpc-js** tool.
    * ```typescript
-   * // Generated browser client
-   * const { DeployServiceClient } = require('../../rnode-grpc-gen/js/DeployServiceV1_grpc_pb')
-   * // Service instance / endpoint
-   * const deployClient = new DeployServiceClient('https://testnet-0.grpc.rchain.isotypic.com')
-   *
-   * // Generated Nodejs client
-   * const grpc = require('grpc')
-   * const { DeployServiceClient, ProposeServiceClient } = require('../../rnode-grpc-gen/js/DeployService_grpc_pb')
-   * const deployClient = new DeployServiceClient('node0.testnet.rchain-dev.tk:40401', grpc.credentials.createInsecure())
+   * const grpc = require('@grpc/grpc-js') // Nodejs client
+   * const grpcWeb = require('grpc-web') // Web client
    *
    * // JSON schema of proto definitions (generated also with rnode-grpc-js tool)
-   * const protoSchema = require('../../rnode-grpc-gen/js/pbjs_generated.json')
+   * const protoSchema = require('../rnode-grpc-gen/js/pbjs_generated.json')
+   * // Import generated protobuf types (in global scope)
+   * require('../../rnode-grpc-gen/js/DeployServiceV1_pb')
+   * require('../../rnode-grpc-gen/js/ProposeServiceV1_pb')
+   *
+   * const options = {
+   *  protoSchema,
+   *  // Nodejs client
+   *  client: new grpc.Client('node0.testnet.rchain-dev.tk:40401', grpc.credentials.createInsecure()),
+   *  // Web client
+   *  host: 'https://testnet-0.grpc.rchain.isotypic.com',
+   *  client: new grpcWeb.GrpcWebClientBase({format: 'binary'}),
+   * }
    *
    * // Instantiate client Deploy service
-   * const { getBlocks, listenForDataAtName, DoDeploy } = rnodeDeploy(deployService, { protoSchema })
+   * const { getBlocks, listenForDataAtName, DoDeploy } = rnodeDeploy(options)
    *
    * // Call remote function
    * const blocks = await getBlocks({ depth: 2 })
    * ```
    */
-  export function rnodeDeploy(deployClient, { protoSchema }): DeployService
+  export function rnodeDeploy(opt: Options): DeployService
 
   /**
    * Example how to instantiate RNode client generated with **rnode-grpc-js** tool.
    * ```typescript
-   * // Generated browser client
-   * const { ProposeServiceClient } = require('../../rnode-grpc-gen/js/ProposeServiceV1_grpc_pb')
-   * // Client instance / endpoint
-   * const proposeClient = new ProposeServiceClient('https://testnet-0.grpc.rchain.isotypic.com')
-   *
-   * // Generated Nodejs client
-   * const grpc = require('grpc')
-   * const { ProposeServiceClient } = require('../../rnode-grpc-gen/js/DeployService_grpc_pb')
-   * // Service instance / endpoint
-   * const proposeClient = new ProposeServiceClient('node0.testnet.rchain-dev.tk:40401', grpc.credentials.createInsecure())
+   * const grpc = require('@grpc/grpc-js') // Nodejs client
+   * const grpcWeb = require('grpc-web') // Web client
    *
    * // JSON schema of proto definitions (generated also with rnode-grpc-js tool)
-   * const protoSchema = require('../../rnode-grpc-gen/js/pbjs_generated.json')
+   * const protoSchema = require('../rnode-grpc-gen/js/pbjs_generated.json')
+   * // Import generated protobuf types (in global scope)
+   * require('../../rnode-grpc-gen/js/DeployServiceV1_pb')
+   * require('../../rnode-grpc-gen/js/ProposeServiceV1_pb')
+   *
+   * const options = {
+   *  protoSchema,
+   *  // Nodejs client
+   *  client: new grpc.Client('node0.testnet.rchain-dev.tk:40401', grpc.credentials.createInsecure()),
+   *  // Web client
+   *  host: 'https://testnet-0.grpc.rchain.isotypic.com',
+   *  client: new grpcWeb.GrpcWebClientBase({format: 'binary'}),
+   * }
    *
    * // Instantiate client Propose service
-   * const { propose } = rnodePropose(proposeClient, { protoSchema })
+   * const { propose } = rnodePropose(options)
    *
    * // Call remote function
-   * await propose()
+   * const { result } = await propose()
    * ```
    */
-  export function rnodePropose(proposeService, { protoSchema }): ProposeService
+  export function rnodePropose(opt: Options): ProposeService
 
   /**
    * Example how to instantiate RNode client generated with **rnode-grpc-js** tool.
    * ```typescript
-   * // Generated Nodejs client
-   * const grpc = require('grpc')
-   * const { ReplClient } = require('../../rnode-grpc-gen/js/repl_grpc_pb')
-   * // Client instance / endpoint
-   * const replClient = new ReplClient('localhost:40402', grpc.credentials.createInsecure())
+   * const grpc = require('@grpc/grpc-js') // Nodejs client
    *
    * // JSON schema of proto definitions (generated also with rnode-grpc-js tool)
-   * const protoSchema = require('../../rnode-grpc-gen/js/pbjs_generated.json')
+   * const protoSchema = require('../rnode-grpc-gen/js/pbjs_generated.json')
+   * // Import generated protobuf types (in global scope)
+   * require('../../rnode-grpc-gen/js/repl_pb')
+   *
+   * const options = {
+   *  protoSchema,
+   *  // Nodejs client
+   *  client: new grpc.Client('node0.testnet.rchain-dev.tk:40402', grpc.credentials.createInsecure()),
+   * }
    *
    * // Instantiate client Repl service
-   * const { Eval, Run } = rnodeRepl(replClient, { protoSchema })
+   * const { Eval, Run } = rnodeRepl(options)
    *
    * // Call remote function
    * const evalResult = await Eval({ program: 'new a in { *a }' })
    * ```
    */
-  export function rnodeRepl(replClient, { protoSchema }): Repl
+  export function rnodeRepl(opt: Options): Repl
 
   /**
    * Example how to instantiate RNode client generated with **rnode-grpc-js** tool.
    * ```typescript
-   * // Generated browser clients
-   * const { DeployServiceClient } = require('../../rnode-grpc-gen/js/DeployServiceV1_grpc_pb')
-   * const { ProposeServiceClient } = require('../../rnode-grpc-gen/js/ProposeServiceV1_grpc_pb')
-   * // Client instances / endpoints
-   * const deployClient = new DeployServiceClient('https://testnet-0.grpc.rchain.isotypic.com')
-   * const proposeClient = new ProposeServiceClient('https://testnet-0.grpc.rchain.isotypic.com')
+   * const grpc = require('@grpc/grpc-js') // Nodejs client
+   * const grpcWeb = require('grpc-web') // Web client
    *
    * // JSON schema of proto definitions (generated also with rnode-grpc-js tool)
-   * const protoSchema = require('../../rnode-grpc-gen/js/pbjs_generated.json')
+   * const protoSchema = require('../rnode-grpc-gen/js/pbjs_generated.json')
+   * // Import generated protobuf types (in global scope)
+   * require('../../rnode-grpc-gen/js/DeployServiceV1_pb')
+   * require('../../rnode-grpc-gen/js/ProposeServiceV1_pb')
+   *
+   * const options = {
+   *  protoSchema,
+   *  // Nodejs client
+   *  client: new grpc.Client('node0.testnet.rchain-dev.tk:40401', grpc.credentials.createInsecure()),
+   *  // Web client
+   *  host: 'https://testnet-0.grpc.rchain.isotypic.com',
+   *  client: new grpcWeb.GrpcWebClientBase({format: 'binary'}),
+   * }
    *
    * // Deploy service example
-   * const { getBlocks, listenForDataAtName, DoDeploy } = rnodeService(deployClient, { protoSchema })
+   * const { getBlocks, listenForDataAtName, DoDeploy } = rnodeService(options)
    *
    * // Propose service example
-   * const { propose } = rnodeService(proposeClient, { protoSchema })
+   * const { propose } = rnodeService(options)
    * ```
    */
-  export function rnodeService(genServiceClient, { protoSchema }): DeployService | ProposeService | Repl
+  export function rnodeService(opt: Options): DeployService | ProposeService | Repl
 
   /**
    * The private key for signing can be in different formats supported by
@@ -126,7 +158,7 @@ declare module "@tgrospic/rnode-grpc-js" {
   /**
    * Protobuf serialize / deserialize operations.
    */
-  export function rnodeProtobuf(protoSchema): TypesBinary
+  export function rnodeProtobuf({protoSchema}: {protoSchema: Object}): TypesBinary
 
   /*__SERVICES__*/
 

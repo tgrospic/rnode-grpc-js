@@ -3,6 +3,24 @@ import { protoTsTypesMapping, flattenSchema } from './lib'
 
 const { log, warn } = console
 
+const isBrowser = typeof window === 'object' && !!window.document
+
+const getProtoSerializer = R.curry((getType, name) => {
+  const {constructor} = getType(name)
+  const serialize = obj => {
+    const t = fillObject(getType, name, obj)
+    return t.serializeBinary() /* Uint8Array */
+  }
+  const deserialize = bytes => {
+    const msg = constructor.deserializeBinary(bytes)
+    return msg.toObject()
+  }
+  const create = opt => {
+    return new constructor(opt)
+  }
+  return { serialize, deserialize, create }
+})
+
 const init = ({protoSchema}) => {
   const schemaFlat = R.chain(flattenSchema([]), [protoSchema])
   const isType = ({type}) => type === 'type'
@@ -22,15 +40,15 @@ const init = ({protoSchema}) => {
   // Methods defined in protobufjs generated JSON schema
   const methods = R.pipe(
     R.filter(R.propEq('type', 'service')),
-    R.map(R.prop('methods')),
+    R.map(service => R.map(m => ({...m, service}), service.methods)),
     R.mergeAll,
   )(schemaFlat)
 
   return { getType, methods, types }
 }
 
-const resolveEither = eitherMsg => {
-  const { success, error } = eitherMsg.toObject()
+const resolveEither = eitherObj => {
+  const { success, error } = eitherObj
   if (success) {
     const {value: valBytes, typeUrl} = success.response
     const [_, typeFullName] = typeUrl.match(/^type.rchain.coop\/(.+)$/)
@@ -46,14 +64,13 @@ const resolveEither = eitherMsg => {
   }
 }
 
-const responseToObject = (responseType, msg, getType) => {
-  if (responseType === 'Either') {
-    return resolveEither(msg)
+const resolveError = R.curry((typeName, getType, msgObj) => {
+  if (typeName === 'Either') {
+    return resolveEither(msgObj)
   }
 
   // Detect errors inside message
-  const msgObj = msg.toObject()
-  const respTypeDef = getType(responseType)
+  const respTypeDef = getType(typeName)
   const errorTypeLens = R.lensPath('def.fields.error.type'.split('.'))
   const errorType = R.view(errorTypeLens, respTypeDef)
 
@@ -61,19 +78,19 @@ const responseToObject = (responseType, msg, getType) => {
   if (errorType === 'ServiceError' && msgObj.error) {
     throw Error(`Service error: ${msgObj.error.messagesList.join(', ')}`)
   }
-  return msg.toObject()
-}
+  return msgObj
+})
 
 const simpleTypes = R.map(R.prop('proto'), protoTsTypesMapping)
 
-const fillObject = R.curry((getType, reqTypeName, input) => {
-  const type = getType(reqTypeName)
-  if (!type) throw Error(`Request type not found: ${reqTypeName}`)
+const fillObject = R.curry((getType, typeName, input) => {
+  const type = getType(typeName)
+  if (!type) throw Error(`Type not found: ${typeName}`)
   const req = new type.constructor()
   Object.entries(input || {}).forEach(([key, v]) => {
     const field = type.def.fields[key]
     if (!field) {
-      warn(`Property not found: ${reqTypeName}.${key}`)
+      warn(`Property not found: ${typeName}.${key}`)
       return
     }
 
@@ -85,7 +102,7 @@ const fillObject = R.curry((getType, reqTypeName, input) => {
     ).join('')
     const setter = req[setterName(R.identity)] || req[setterName(R.toLower)]
     !setter && warn(
-      `Property setter not found ${reqTypeName}.${key} (<gen-js>.${setterName(R.identity)})`
+      `Property setter not found ${typeName}.${key} (<gen-js>.${setterName(R.identity)})`
     )
 
     // Create property value / recursively resolve complex types
@@ -104,51 +121,104 @@ const fillObject = R.curry((getType, reqTypeName, input) => {
   return req
 })
 
-const createApiMethod = R.curry((service, getType, method, name) => async (input, meta) => {
+const createApiMethod = R.curry(({client, host}, getType, method, name) => async (input, meta) => {
   const isReponseStream = !!method.responseStream
-  const req = fillObject(getType, method.requestType, input)
 
-  // Get service method
-  const lowerize = ([h, ...t]) => `${h.toLowerCase()}${t.join('')}`
-  const sm = service[name] || service[lowerize(name)]
-  if (!sm) throw Error(`Service method not found: ${name}`)
-  const serviceMethod = sm.bind(service)
+  // Build service method name
+  const namespace = method.service.namespace.join('.')
+  const serviceName = method.service.name
+  const methodName = `/${namespace}.${serviceName}/${name}`
+  // Request/response protobuf serializers
+  const reqProto = getProtoSerializer(getType, method.requestType)
+  const resProto = getProtoSerializer(getType, method.responseType)
 
-  if (isReponseStream) {
-    const call = serviceMethod(req, meta)
-    const streamResult = []
-    return new Promise((resolve, reject) => {
-      call.on('data', resultMsg => {
-        try {
-          const result = responseToObject(method.responseType, resultMsg, getType)
-          streamResult.push(result)
-        } catch (err) { reject(err) }
-      })
-      call.on('error', reject)
-      call.on('end', _ => { resolve(streamResult) })
-    })
-  } else {
-    return new Promise((resolve, reject) => {
-      serviceMethod(req, meta, (err, resultMsg) => {
-        if (err) reject(err)
-        else {
+  if (isBrowser) {
+    // Browser support (grpc-web)
+    // HACK: require reference to peer dependency to get
+    // MethodInfo which cannot be plain JS object ??
+    const grpcWeb = require('grpc-web')
+    const methodInfo =
+      new grpcWeb.AbstractClientBase.MethodInfo(null, reqProto.serialize, resProto.deserialize)
+    // Select type of method
+    const remoteMethod = isReponseStream
+      ? client.serverStreaming.bind(client) : client.unaryCall.bind(client)
+
+    // Call remote method
+    const comm = remoteMethod(
+      `${host}${methodName}`,
+      input,
+      meta || {},
+      methodInfo,
+    )
+
+    if (isReponseStream) {
+      return new Promise((resolve, reject) => {
+        const streamResult = []
+        comm.on('data', resultMsg => {
           try {
-            // Resolve Either value
-            const result = responseToObject(method.responseType, resultMsg, getType)
-            resolve(result)
+            const result = resolveError(method.responseType, getType, resultMsg)
+            streamResult.push(result)
           } catch (err) { reject(err) }
-        }
+        })
+        comm.on('error', reject)
+        comm.on('end', _ => { resolve(streamResult) })
       })
-    })
+    } else {
+      return comm.then(resolveError(method.responseType, getType))
+    }
+  } else {
+    // Nodejs support (grpc-js)
+    if (isReponseStream) {
+      // Call remote method
+      const comm = client.makeServerStreamRequest(
+        methodName,
+        R.pipe(reqProto.serialize, Buffer.from),
+        resProto.deserialize,
+        input,
+        meta || {},
+      )
+      return new Promise((resolve, reject) => {
+        const streamResult = []
+        comm.on('data', resultMsg => {
+          try {
+            const result = resolveError(method.responseType, getType, resultMsg)
+            streamResult.push(result)
+          } catch (err) { reject(err) }
+        })
+        comm.on('error', reject)
+        comm.on('end', _ => { resolve(streamResult) })
+      })
+    } else {
+      return new Promise((resolve, reject) => {
+        // Call remote method
+        client.makeUnaryRequest(
+          methodName,
+          R.pipe(reqProto.serialize, Buffer.from),
+          resProto.deserialize,
+          input,
+          meta || {},
+          (err, resultMsg) => {
+            if (err) reject(err)
+            else {
+              try {
+                // Resolve Either value
+                const result = resolveError(method.responseType, getType, resultMsg)
+                resolve(result)
+              } catch (err) { reject(err) }
+            }
+          }
+        )
+      })
+    }
   }
 })
 
-export const rnodeService = (service, opt) => {
-  const {getType, methods} = init(opt)
+export const rnodeService = (options) => {
+  const {getType, methods} = init(options)
 
   // Create RNode service API from proto definition
   return R.mapObjIndexed(
-    createApiMethod(service, getType),
+    createApiMethod(options, getType),
     methods,
   )
 }
@@ -161,24 +231,7 @@ export const rnodeRepl    = rnodeService
 export const rnodeProtobuf = ({protoSchema}) => {
   const {getType, types} = init({protoSchema})
 
-  const getTypeOp = ({name}) => {
-    const {def, constructor} = getType(name)
-    const serialize = obj => {
-      const t = fillObject(getType, name, obj)
-      return t.serializeBinary() /* Uint8Array */
-    }
-    const deserialize = bytes => {
-      const msg = constructor.deserializeBinary(bytes)
-      return msg.toObject()
-    }
-    const create = opt => {
-      return new constructor(opt)
-    }
-    return { [name]: { serialize, deserialize, create } }
-  }
+  const getTypeOp = ({name}) => ({ [name]: getProtoSerializer(getType, name) })
 
-  return R.pipe(
-    R.map(getTypeOp),
-    R.mergeAll,
-  )(types)
+  return R.pipe(R.map(getTypeOp), R.mergeAll)(types)
 }
