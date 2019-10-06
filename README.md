@@ -40,7 +40,7 @@ The purpose of `rnode-grpc` CLI command is to download and generate necessary fi
 rnode-grpc
 
 # Generate with specific options
-rnode-grpc --rnode-version v0.9.12 --gen-dir ./rnode-grpc-gen
+rnode-grpc --rnode-version v0.9.14 --gen-dir ./rnode-grpc-gen
 
 # Run from your project folder
 node_modules/.bin/rnode-grpc
@@ -69,7 +69,25 @@ interface DeployService {
 
 ## API
 
+More info for client options for [@grpc/grpc-js](https://github.com/grpc/grpc-node/blob/b05caec/packages/grpc-js/src/client.ts#L67) and [grpc-web](https://github.com/grpc/grpc-web/blob/8b501a96f/javascript/net/grpc/web/grpcwebclientbase.js#L45).
+
+`@grpc/grpc-js` is a pure JS variant of `grpc` package, which can be also used in Nodejs.
+
 ```typescript
+interface Options {
+  // gRPC protocol implementation
+  // - `@grpc/grpc-js` for Nodejs
+  // - `grpc-web` for browser
+  grpcLib: any
+  // Custom options for gRPC clients
+  // - `credentials` can be supplied as part of `clientOptions` for `grpc-js`
+  clientOptions?: any,
+  // RNode host (method prefix)
+  host: string,
+  // Generated JSON schema
+  protoSchema: Object
+}
+
 // Get deploy service methods
 rnodeDeploy(opt: Options): DeployService
 
@@ -78,6 +96,9 @@ rnodePropose(opt: Options): ProposeService
 
 // Get repl service methods
 rnodeRepl(opt: Options): Repl
+
+// Get all service methods
+rnodeService(opt: Options): DeployService & ProposeService & Repl
 
 // Sign deploy data
 signDeploy(key: string | Uint8Array | Buffer | ec.KeyPair, deploy: UnsignedDeployData): DeployDataProto
@@ -91,18 +112,18 @@ rnodeProtobuf({protoSchema}): TypesBinary
 
 ### TypeScript definitions
 
-Here is an example of [TypeScript definition file](docs/rnode-grpc-js-v0.9.12.d.ts) generated for `v0.9.12` version of RNode.
+Here is an example of [TypeScript definition file](docs/rnode-grpc-js-v0.9.14.d.ts) generated for `v0.9.14` version of RNode.
 
 ```sh
 # Run CLI command with an option to specify RNode version (Git repo release tag)
-rnode-grpc --rnode-version v0.9.12
+rnode-grpc --rnode-version v0.9.14
 ```
 Generated TypeScript definitions are complete with the conversion of response errors inside the message to `Promise` errors. For RNode after `v0.9.14` version `ServiceError` type is converted and on previous versions the same conversion is done on a _dynamic_ `Either` type. :smile:
 
 ```typescript
-// Typescipt generated interface from RNode v0.9.12 protbuf definitions
+// Typescipt generated interface from RNode v0.9.14 protbuf definitions
 interface DeployService {
-  DoDeploy(_?: DeployData): Promise<DeployServiceResponse>
+  DoDeploy(_?: DeployDataProto): Promise<DeployServiceResponse>
   getBlock(_?: BlockQuery): Promise<BlockQueryResponse>
   visualizeDag(_?: VisualizeDagQuery): Promise<VisualizeBlocksResponse[]>
   machineVerifiableDag(_?: MachineVerifyQuery): Promise<Unit>
@@ -110,10 +131,10 @@ interface DeployService {
   getBlocks(_?: BlocksQuery): Promise<LightBlockInfo[]>
   listenForDataAtName(_: DataAtNameQuery): Promise<ListeningNameDataResponse>
   listenForContinuationAtName(_: ContinuationAtNameQuery): Promise<ListeningNameContinuationResponse>
-  findBlockWithDeploy(_?: FindDeployInBlockQuery): Promise<BlockQueryResponse>
   findDeploy(_?: FindDeployQuery): Promise<LightBlockQueryResponse>
   previewPrivateNames(_?: PrivateNamePreviewQuery): Promise<PrivateNamePreviewResponse>
-  lastFinalizedBlock(_?: LastFinalizedBlockQuery): Promise<BlockQueryResponse>
+  lastFinalizedBlock(_?: LastFinalizedBlockQuery): Promise<LastFinalizedBlockResponse>
+  isFinalized(_?: IsFinalizedQuery): Promise<IsFinalizedResponse>
 }
 ```
 
@@ -125,6 +146,7 @@ Working version of this example can be found here [@tgrospic/rnode-client-js/src
 
 ```typescript
 /// <reference path="../rnode-grpc-gen/js/rnode-grpc-js.d.ts" />
+import grpcWeb from 'grpc-web'
 import { ec } from 'elliptic'
 import { rnodeDeploy, rnodePropose, signDeploy, verifyDeploy, LightBlockInfo } from '@tgrospic/rnode-grpc-js'
 
@@ -141,11 +163,7 @@ import '../rnode-grpc-gen/js/ProposeServiceV1_pb'
 const rnodeExternalUrl = 'https://testnet-0.grpc.rchain.isotypic.com'
 
 // Instantiate http clients
-const options = {
-  client: new grpcWeb.GrpcWebClientBase({format: 'binary'}),
-  host: rnodeUrl,
-  protoSchema,
-}
+const options = { grpcLib: grpcWeb, host: rnodeExternalUrl, protoSchema }
 
 // Get RNode service methods
 const { getBlocks, DoDeploy } = rnodeDeploy(options)

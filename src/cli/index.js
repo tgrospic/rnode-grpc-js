@@ -115,5 +115,5 @@ export const run = async ({args, cwd}) => {
   log(blue('Generating TypeScript definitions...'))
 
   // Generate TypeScript definitions
-  await generateTs({jsPath, protoPath, protoSchema})
+  await generateTs({jsPath, protoPath, protoSchema, version})
 }

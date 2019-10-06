@@ -102,7 +102,7 @@ const binaryOpCodeGen = ({name}) => {
   return `${name}: BinaryOp<${name}>`
 }
 
-export const generateTs = async ({jsPath, protoPath, protoSchema}) => {
+export const generateTs = async ({jsPath, protoPath, protoSchema, version}) => {
   // Schema definition
   const schemaFlat = R.chain(flattenSchema([]), [protoSchema])
   const types = R.filter(R.propEq('type', 'type'), schemaFlat)
@@ -130,9 +130,10 @@ export const generateTs = async ({jsPath, protoPath, protoSchema}) => {
   const tsGen1 = tmplTs.replace('/*__SERVICES__*/', servicesGen.join('\n\n  '))
   const tsGen2 = tsGen1.replace('/*__TYPES__*/', typesGen.join('\n\n  '))
   const tsGen3 = tsGen2.replace('/*__TYPES_BINARY__*/', binaryGen.join('\n    '))
+  const tsGen4 = tsGen3.replace('__RNODE_VERSION__', version)
 
   // Write generated TypeScript file
-  await writeFile(tsGenPath, tsGen3)
+  await writeFile(tsGenPath, tsGen4)
 
   // Write flatten API schema
   await writeFile(schemaPath, JSON.stringify(schemaFlat, null, 2))

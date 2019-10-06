@@ -21,11 +21,42 @@ const getProtoSerializer = R.curry((getType, name) => {
   return { serialize, deserialize, create }
 })
 
+const makeGrpcProtocol = ({host, grpcLib, clientOptions={}}) => {
+  if (!grpcLib) throw Error(`gRPC library not provided (grpcLib option).`)
+
+  // gRPC clients
+  if (isBrowser) {
+    if (!grpcLib.AbstractClientBase)
+      throw Error(`Browser detected but 'grpc-web' instance not recognized.`)
+
+    // Browser support (grpc-web)
+    const MethodInfo = grpcLib.AbstractClientBase.MethodInfo
+
+    // https://github.com/grpc/grpc-web/blob/8b501a96f/javascript/net/grpc/web/grpcwebclientbase.js#L45
+    const client = new grpcLib.GrpcWebClientBase({format: 'binary', ...clientOptions})
+
+    return { client, MethodInfo }
+  } else {
+    if (!grpcLib.Client)
+      throw Error(`Node.js detected but 'grpc' instance not recognized.`)
+
+    // Nodejs support (grpc-js)
+    const { credentials, ...options } = clientOptions
+    const creds = credentials || grpcLib.credentials.createInsecure()
+
+    // https://github.com/grpc/grpc-node/blob/b05caec/packages/grpc-js/src/client.ts#L67
+    const client = new grpcLib.Client(host, creds, options)
+
+    return { client }
+  }
+}
+
 const init = ({protoSchema}) => {
   const schemaFlat = R.chain(flattenSchema([]), [protoSchema])
   const isType = ({type}) => type === 'type'
   const isName = typeName => ({name}) => name === typeName
   const types = R.filter(isType, schemaFlat)
+
   // Returns type definition and type constructor (protoc generated)
   const getType = name => {
     const typeDef = R.find(isName(name), types)
@@ -37,6 +68,7 @@ const init = ({protoSchema}) => {
       def: typeDef,
     }
   }
+
   // Methods defined in protobufjs generated JSON schema
   const methods = R.pipe(
     R.filter(R.propEq('type', 'service')),
@@ -121,7 +153,7 @@ const fillObject = R.curry((getType, typeName, input) => {
   return req
 })
 
-const createApiMethod = R.curry(({client, host}, getType, method, name) => async (input, meta) => {
+const createApiMethod = R.curry(({protocol, host}, getType, method, name) => async (input, meta) => {
   const isReponseStream = !!method.responseStream
 
   // Build service method name
@@ -131,14 +163,11 @@ const createApiMethod = R.curry(({client, host}, getType, method, name) => async
   // Request/response protobuf serializers
   const reqProto = getProtoSerializer(getType, method.requestType)
   const resProto = getProtoSerializer(getType, method.responseType)
+  const client = protocol.client
 
   if (isBrowser) {
     // Browser support (grpc-web)
-    // HACK: require reference to peer dependency to get
-    // MethodInfo which cannot be plain JS object ??
-    const grpcWeb = require('grpc-web')
-    const methodInfo =
-      new grpcWeb.AbstractClientBase.MethodInfo(null, reqProto.serialize, resProto.deserialize)
+    const methodInfo = new protocol.MethodInfo(null, reqProto.serialize, resProto.deserialize)
     // Select type of method
     const remoteMethod = isReponseStream
       ? client.serverStreaming.bind(client) : client.unaryCall.bind(client)
@@ -216,9 +245,12 @@ const createApiMethod = R.curry(({client, host}, getType, method, name) => async
 export const rnodeService = (options) => {
   const {getType, methods} = init(options)
 
+  // Create client protocol
+  const protocol = makeGrpcProtocol(options)
+
   // Create RNode service API from proto definition
   return R.mapObjIndexed(
-    createApiMethod(options, getType),
+    createApiMethod({...options, protocol}, getType),
     methods,
   )
 }
