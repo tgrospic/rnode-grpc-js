@@ -17,7 +17,9 @@ const blue = txt => `\u001b[34m${txt}\u001b[0m`
 
 const ext = process.platform === 'win32' ? '.cmd' : ''
 
-const npmBin = 'node_modules/.bin'
+// Resolve npm bin folder in the top project
+// <project>/node_modules/@tgrospic/rnode-grpc-js/dist/cli
+const npmBin = path.resolve(__dirname, '../../../../.bin')
 
 const generateJsPb = async ({jsPath, protoPath, protoFiles}) => {
   const protoc = path.resolve(npmBin, `grpc_tools_node_protoc${ext}`)
