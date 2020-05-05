@@ -249,10 +249,11 @@ export const rnodeService = (options) => {
   const protocol = makeGrpcProtocol(options)
 
   // Create RNode service API from proto definition
-  return R.mapObjIndexed(
-    createApiMethod({...options, protocol}, getType),
+  const service = R.mapObjIndexed(
+    createApiMethod({ ...options, protocol }, getType),
     methods,
   )
+  return { ...service, _grpcClient: protocol.client }
 }
 
 // Different name for each service to support TypeScript definitions
