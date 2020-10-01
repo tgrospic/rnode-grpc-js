@@ -237,13 +237,8 @@ HTTP `https://NETWORK-{0-n}.grpc.rchain.isotypic.com`
 
 | gRPC                              | HTTP
 |:---------------------------------:|:-----------------------------------------:
-| node0.testnet.rchain-dev.tk:40401 | https://testnet-0.grpc.rchain.isotypic.com
-| node1.testnet.rchain-dev.tk:40401 | https://testnet-1.grpc.rchain.isotypic.com
-| node2.testnet.rchain-dev.tk:40401 | https://testnet-2.grpc.rchain.isotypic.com
-| node3.testnet.rchain-dev.tk:40401 | https://testnet-3.grpc.rchain.isotypic.com
-| node4.testnet.rchain-dev.tk:40401 | https://testnet-4.grpc.rchain.isotypic.com
-| node5.testnet.rchain-dev.tk:40401 | https://testnet-5.grpc.rchain.isotypic.com
-| node6.testnet.rchain-dev.tk:40401 | https://testnet-6.grpc.rchain.isotypic.com
-| node7.testnet.rchain-dev.tk:40401 | https://testnet-7.grpc.rchain.isotypic.com
-| node8.testnet.rchain-dev.tk:40401 | https://testnet-8.grpc.rchain.isotypic.com
-| node9.testnet.rchain-dev.tk:40401 | https://testnet-9.grpc.rchain.isotypic.com
+| node0.testnet.rchain-dev.tk:40401 | https://node0.testnet.rchain-dev.tk
+| node1.testnet.rchain-dev.tk:40401 | https://node1.testnet.rchain-dev.tk
+| node2.testnet.rchain-dev.tk:40401 | https://node2.testnet.rchain-dev.tk
+| node3.testnet.rchain-dev.tk:40401 | https://node3.testnet.rchain-dev.tk
+| node4.testnet.rchain-dev.tk:40401 | https://node4.testnet.rchain-dev.tk
