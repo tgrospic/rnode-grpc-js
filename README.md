@@ -223,7 +223,7 @@ const deployObj: DeployDataProto = DeployDataProto.deserialize(deployBytes)
 
 The main difference is that this library does not depend on any specific version of RNode nor the schema definition (with minor caveats). RNode version is an input parameter and the goal is to generate JS and TS code for any RNode version.
 
-## Available proxies for _testnet_
+## Example for Node.js (with web)
 
 Sample static site to test requests from the browser
-[https://tgrospic.github.io/rnode-client-js](https://tgrospic.github.io/rnode-client-js). It's published as part of the example repository [@tgrospic/rnode-client-js](https://github.com/tgrospic/rnode-client-js).
+[https://tgrospic.github.io/rnode-client-js](https://tgrospic.github.io/rnode-client-js). It's published as part of the example repository [@tgrospic/rnode-client-js](https://github.com/tgrospic/rnode-client-js). It also contains protobuf/gRPC examples for Node.js.
