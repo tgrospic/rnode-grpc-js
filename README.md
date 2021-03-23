@@ -227,18 +227,3 @@ The main difference is that this library does not depend on any specific version
 
 Sample static site to test requests from the browser
 [https://tgrospic.github.io/rnode-client-js](https://tgrospic.github.io/rnode-client-js). It's published as part of the example repository [@tgrospic/rnode-client-js](https://github.com/tgrospic/rnode-client-js).
-
-#### Proxy address pattern:
-
-gRPC `node{0-n}.NETWORK.rchain-dev.tk:40401`  
-HTTP `https://NETWORK-{0-n}.grpc.rchain.isotypic.com`
-
-### testnet
-
-| gRPC                              | HTTP
-|:---------------------------------:|:-----------------------------------------:
-| node0.testnet.rchain-dev.tk:40401 | https://node0.testnet.rchain-dev.tk
-| node1.testnet.rchain-dev.tk:40401 | https://node1.testnet.rchain-dev.tk
-| node2.testnet.rchain-dev.tk:40401 | https://node2.testnet.rchain-dev.tk
-| node3.testnet.rchain-dev.tk:40401 | https://node3.testnet.rchain-dev.tk
-| node4.testnet.rchain-dev.tk:40401 | https://node4.testnet.rchain-dev.tk
