@@ -116,7 +116,7 @@ export const generateTs = async ({jsPath, protoPath, protoSchema, version}) => {
   const protoFiles   = await readProtoFiles(protoPath)
   const servicesMeta = parseProtoReponseMeta(protoFiles)
   const services     = getServices(servicesMeta)
-  const tmplTsPath   = path.resolve(__dirname, './rnode-grpc-js-tmpl.d.ts')
+  const tmplTsPath   = path.resolve(__dirname, '../../src-template/rnode-grpc-js-tmpl.d.ts')
   const tmplTs       = await readFile(tmplTsPath, 'utf8')
   const tsGenPath    = path.resolve(jsPath, 'rnode-grpc-js.d.ts')
   const schemaPath   = path.resolve(jsPath, 'rnode-api-schema.json')
