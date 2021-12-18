@@ -81,8 +81,8 @@ const fieldCodeGen = (nullables, key, {type, rule}) => {
   const suffixList = isList ? '[]' : ''
   const origType = tsType && tsType.ts !== type ? ` /* ${type} */` : ''
   return tsType
-    ? `${key}${nullable}: ${tsType.ts}${suffixList}${origType}`
-    : `${key}${nullable}: ${type}${suffixList}`
+    ? `readonly ${key}${nullable}: ${tsType.ts}${suffixList}${origType}`
+    : `readonly ${key}${nullable}: ${type}${suffixList}`
 }
 
 // Generates code for type interface
@@ -99,7 +99,7 @@ const typeCodeGen = ({name, fields, nullables}) => {
 // Generates code for binary operations (exposed from generated JS code)
 const binaryOpCodeGen = ({name}) => {
   // Indentation is important, it's used in generated file
-  return `${name}: BinaryOp<${name}>`
+  return `readonly ${name}: BinaryOp<${name}>`
 }
 
 export const generateTs = async ({jsPath, protoPath, protoSchema, version}) => {

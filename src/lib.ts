@@ -1,4 +1,5 @@
 import * as R from 'ramda'
+import { ChildProcess } from 'node:child_process'
 
 // Mapping protobuf (simple) types to TypeScript types
 export const protoTsTypesMapping = [
@@ -7,9 +8,9 @@ export const protoTsTypesMapping = [
   { proto: 'int32' , ts: 'number' },
   { proto: 'uint32', ts: 'number' },
   { proto: 'sint32', ts: 'number' },
-  { proto: 'int64' , ts: 'number | Long' },
-  { proto: 'uint64', ts: 'number | Long' },
-  { proto: 'sint64', ts: 'number | Long' },
+  { proto: 'int64' , ts: 'number' },
+  { proto: 'uint64', ts: 'number' },
+  { proto: 'sint64', ts: 'number' },
   { proto: 'float' , ts: 'number' },
   { proto: 'double', ts: 'number' },
   { proto: 'bytes' , ts: 'Uint8Array' },
@@ -23,10 +24,10 @@ const ignoredNamespaces = [
 ]
 
 // Transform generated (protobufjs) JSON to a flat list of services and types
-export const flattenSchema = parentPath => schema => {
+export const flattenSchema = (parentPath: any) => (schema: any) => {
   const nestedProps = R.prop('nested', schema)
-  const getProps = R.pipe(
-    Object.entries,
+  const getProps: any = R.pipe(
+    Object.entries as any,
     R.chain(([name, v]) => {
       const {methods, fields, nested} = v
       const namespace = parentPath
@@ -34,25 +35,28 @@ export const flattenSchema = parentPath => schema => {
         return { namespace, type: 'service', name, methods }
       else if (fields) {
         // Fix fields names the same way as protoc JS generator
-        const fixName = name => {
+        const fixName = (name: string) => {
           const { rule } = fields[name]
           const isList = rule === 'repeated'
           const listSuffix = isList ? 'List' : ''
           const genName = name.toLowerCase().replace(/_(\S)/g, (_, x) => x.toUpperCase())
           return `${genName}${listSuffix}`
         }
-        const fixFieldName = (acc, [k, v]) => {
+        const fixFieldName = (acc: any, [k, v]: [any, any]) => {
           const fieldName = fixName(k)
           return {...acc, [fieldName]: v}
         }
         const fieldsFixed = R.pipe(Object.entries, R.reduce(fixFieldName, {}))
         const nullables = R.pipe(
-          R.propOr({}, 'oneofs'), Object.values, R.chain(R.prop('oneof')), R.map(fixName)
+          R.propOr({}, 'oneofs'), Object.values, R.chain(R.prop('oneof')) as any, R.map(fixName)
         )(v)
         return { namespace, type: 'type', name, fields: fieldsFixed(fields), nullables }
       }
       else if (nested)
         return R.chain(flattenSchema([...parentPath, name]), [v])
+      else
+        // Not important fields (scalapb options, ...)
+        return
     }),
     R.reject(R.isNil),
     R.reject(({namespace}) => R.contains(namespace, ignoredNamespaces)),
@@ -60,24 +64,26 @@ export const flattenSchema = parentPath => schema => {
   return getProps(nestedProps || {})
 }
 
-export const then = R.curry((f, p) => p.then(f))
+type MapBindPromise<a, b> = (a: a) => b | ((a: a) => Promise<b>)
 
-export const thenAll = ps => Promise.all(ps)
+export const then = R.curry((f: MapBindPromise<any, any>, p: Promise<any>) => p.then(f))
 
-export const mapAsync = R.curry(async (f, xs) => thenAll(R.map(f, await xs)))
+export const thenAll: typeof Promise.all = Promise.all.bind(Promise)
 
-export const chainAsync = R.curry(async (f, xs) => R.flatten(await mapAsync(f, await xs)))
+export const mapAsync = R.curry(async (f: MapBindPromise<any, any>, xs) => thenAll(R.map(f, await xs)))
+
+export const chainAsync = R.curry(async (f: MapBindPromise<any, any>, xs) => R.flatten(await mapAsync(f, await xs)))
 
 export const filterAsync = R.curry(async (pred, xs) => {
-  const predX = async x => ({ p: await pred(x), x })
+  const predX = async (x: any) => ({ p: await pred(x), x })
   const predXs = await mapAsync(predX, await xs)
   return R.pipe(
-    R.filter(R.prop('p')),
+    R.filter(R.prop('p') as any),
     mapAsync(R.prop('x')),
-  )(predXs)
+  )(predXs as any)
 })
 
-export const waitExit = (proc, result, error) =>
+export const waitExit = (proc: ChildProcess, result: any, error: any) =>
   new Promise((resolve, reject) => {
     proc.on('exit', code => {
       code === 0 ? resolve(result) : reject(error)
