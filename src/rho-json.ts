@@ -1,11 +1,27 @@
 /**
-  * Converts Par object to JSON returned from RNode gRPC API
+  * Converts `Par` object to JSON returned from the RNode gRPC API.
   *
-  *  new return(`rho:rchain:deployId`) in {
-  *    return!("One argument") |   // monadic
-  *    return!((true, A, B)) |     // monadic as tuple
-  *    return!(true, A, B) |       // polyadic
-  *  }
+  * Example of Rholang return values.
+  * ```scala
+  * new return(`rho:rchain:deployId`) in {
+  *   return!("One argument") |    // monadic
+  *   return!((true, "A", "B")) |  // monadic as tuple
+  *   return!(true, "A", "B") |    // polyadic
+  *   return!(true) | return!("A") // multiple values
+  * }
+  * ```
+  * And the corresponding converted JSON objects.
+  *
+  * ```js
+  * [ 'One argument' ]       // return!("One argument")
+  * [ [ true, 'A', 'B' ] ]   // return!((true, "A", "B"))
+  * [ true, 'A', 'B' ]       // return!(true, "A", "B")
+  * [ true, 'A' ]            // return!(true) | return!("A")
+  * // NOTE: primitive types with default values are converted to `null`
+  * //       because they are not serialized in protobuf message.
+  * //       https://github.com/rchain/rchain/issues/3566
+  * [ [ null, null, null ] ] // return!((false, 0, ""))
+  * ```
   */
 // TODO: make it stack safe
 export const rhoParToJson = (input: Par): any => {

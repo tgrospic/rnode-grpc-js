@@ -38,6 +38,9 @@ export interface DeploySignedProto {
   *
   * The private key for signing can be in different formats supported by
   * [elliptic](https://github.com/indutny/elliptic#ecdsa) library.
+  *
+  * **NOTE: Signing function can be used independently without this library and JS generated code (see _rnode-sign.ts_ source).**
+  *
   * ```typescript
   * // Generate new key pair
   * const { ec } = require('elliptic')
