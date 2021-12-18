@@ -73,12 +73,12 @@ const uint8ArrayToHex = (x: Uint8Array) =>
   * - depends on specific version of specific RNode version but not changed often
   */
 
-interface Par {
+export interface Par {
   readonly exprsList?: Expr[]
   readonly unforgeablesList?: GUnforgeable[]
 }
 
-interface Expr {
+export interface Expr {
   // Primitive types
   // NOTE: Protobuf 3 doesn't serialize default values, so no way
   //       to check which field contains the value if set to default!
@@ -95,41 +95,41 @@ interface Expr {
   readonly eMapBody?: EMap
 }
 
-interface EList {
+export interface EList {
   readonly psList?: Par[]
 }
 
-interface ETuple {
+export interface ETuple {
   readonly psList?: Par[]
 }
 
-interface ESet {
+export interface ESet {
   readonly psList?: Par[]
 }
 
-interface EMap {
+export interface EMap {
   readonly kvsList?: KeyValuePair[]
 }
 
-interface KeyValuePair {
+export interface KeyValuePair {
   readonly key: Par
   readonly value: Par
 }
 
-interface GUnforgeable {
+export interface GUnforgeable {
   readonly gPrivateBody?: GPrivate
   readonly gDeployIdBody?: GDeployId
   readonly gDeployerIdBody?: GDeployerId
 }
 
-interface GPrivate {
+export interface GPrivate {
   readonly id?: Uint8Array
 }
 
-interface GDeployId {
+export interface GDeployId {
   readonly sig?: Uint8Array
 }
 
-interface GDeployerId {
+export interface GDeployerId {
   readonly publickey?: Uint8Array
 }
