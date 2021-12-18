@@ -20,6 +20,8 @@ const ext = process.platform === 'win32' ? '.cmd' : ''
 // Resolve npm bin folder in the top project
 // <project>/node_modules/@tgrospic/rnode-grpc-js/dist/cli
 const npmBin = path.resolve(__dirname, '../../../../.bin')
+// DEV: Path to npm .bin directory in development `npm link ../rnode-grpc-js`
+// const npmBin = path.resolve(__dirname, '../../node_modules/.bin')
 
 const generateJsPb = async ({jsPath, protoPath, protoFiles}) => {
   const protoc = path.resolve(npmBin, `grpc_tools_node_protoc${ext}`)
@@ -51,7 +53,7 @@ export const run = async ({args, cwd}) => {
   // Input options
   const options = parseArgs(args)
   const {
-    'rnode-version': version='v0.9.12',
+    'rnode-version': version='v0.12.4',
     'gen-dir': genDirRel='rnode-grpc-gen',
     'include-reflection': includeReflection=false,
   } = options

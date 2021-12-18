@@ -81,8 +81,8 @@ const fieldCodeGen = (nullables, key, {type, rule}) => {
   const suffixList = isList ? '[]' : ''
   const origType = tsType && tsType.ts !== type ? ` /* ${type} */` : ''
   return tsType
-    ? `${key}${nullable}: ${tsType.ts}${suffixList}${origType}`
-    : `${key}${nullable}: ${type}${suffixList}`
+    ? `readonly ${key}${nullable}: ${tsType.ts}${suffixList}${origType}`
+    : `readonly ${key}${nullable}: ${type}${suffixList}`
 }
 
 // Generates code for type interface
@@ -99,7 +99,7 @@ const typeCodeGen = ({name, fields, nullables}) => {
 // Generates code for binary operations (exposed from generated JS code)
 const binaryOpCodeGen = ({name}) => {
   // Indentation is important, it's used in generated file
-  return `${name}: BinaryOp<${name}>`
+  return `readonly ${name}: BinaryOp<${name}>`
 }
 
 export const generateTs = async ({jsPath, protoPath, protoSchema, version}) => {
@@ -116,7 +116,7 @@ export const generateTs = async ({jsPath, protoPath, protoSchema, version}) => {
   const protoFiles   = await readProtoFiles(protoPath)
   const servicesMeta = parseProtoReponseMeta(protoFiles)
   const services     = getServices(servicesMeta)
-  const tmplTsPath   = path.resolve(__dirname, './rnode-grpc-js-tmpl.d.ts')
+  const tmplTsPath   = path.resolve(__dirname, '../../src-template/rnode-grpc-js-tmpl.d.ts')
   const tmplTs       = await readFile(tmplTsPath, 'utf8')
   const tsGenPath    = path.resolve(jsPath, 'rnode-grpc-js.d.ts')
   const schemaPath   = path.resolve(jsPath, 'rnode-api-schema.json')

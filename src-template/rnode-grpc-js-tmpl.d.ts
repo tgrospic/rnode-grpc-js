@@ -1,8 +1,10 @@
+import { ec } from 'elliptic'
+import * as _ from "@tgrospic/rnode-grpc-js"
+
 /**
  * Generated TypeScript definitions for RNode __RNODE_VERSION__
  */
 declare module "@tgrospic/rnode-grpc-js" {
-  import { ec } from 'elliptic'
 
   interface Options {
     // gRPC protocol implementation
@@ -29,13 +31,13 @@ declare module "@tgrospic/rnode-grpc-js" {
    *
    * const options = {
    *   // JSON schema of proto definitions (generated also with rnode-grpc-js tool)
-   *   protoSchema: require('../rnode-grpc-gen/js/pbjs_generated.json'),
+   *   protoSchema: require('../../rnode-grpc-gen/js/pbjs_generated.json'),
    *   // Nodejs client
    *   grpcLib: require('@grpc/grpc-js'),
-   *   host: 'node0.testnet.rchain-dev.tk:40401',
+   *   host: 'localhost:40401',
    *   // Web client
    *   grpcLib: require('grpc-web'),
-   *   host: 'https://testnet-0.grpc.rchain.isotypic.com',
+   *   host: 'https://<grpc-web-host>:<port>',
    * }
    *
    * // Instantiate client Deploy service
@@ -56,13 +58,13 @@ declare module "@tgrospic/rnode-grpc-js" {
    *
    * const options = {
    *   // JSON schema of proto definitions (generated also with rnode-grpc-js tool)
-   *   protoSchema: require('../rnode-grpc-gen/js/pbjs_generated.json'),
+   *   protoSchema: require('../../rnode-grpc-gen/js/pbjs_generated.json'),
    *   // Nodejs client
    *   grpcLib: require('@grpc/grpc-js'),
-   *   host: 'node0.testnet.rchain-dev.tk:40401',
+   *   host: 'localhost:40402',
    *   // Web client
    *   grpcLib: require('grpc-web'),
-   *   host: 'https://testnet-0.grpc.rchain.isotypic.com',
+   *   host: 'https://<grpc-web-host>:<port>',
    * }
    *
    * // Instantiate client Propose service
@@ -82,10 +84,10 @@ declare module "@tgrospic/rnode-grpc-js" {
    *
    * const options = {
    *   // JSON schema of proto definitions (generated also with rnode-grpc-js tool)
-   *   protoSchema: require('../rnode-grpc-gen/js/pbjs_generated.json'),
+   *   protoSchema: require('../../rnode-grpc-gen/js/pbjs_generated.json'),
    *   // Nodejs client
    *   grpcLib: require('@grpc/grpc-js'),
-   *   host: 'node0.testnet.rchain-dev.tk:40402',
+   *   host: 'localhost:40402',
    * }
    *
    * // Instantiate client Repl service
@@ -106,13 +108,13 @@ declare module "@tgrospic/rnode-grpc-js" {
    *
    * const options = {
    *   // JSON schema of proto definitions (generated also with rnode-grpc-js tool)
-   *   protoSchema: require('../rnode-grpc-gen/js/pbjs_generated.json'),
+   *   protoSchema: require('../../rnode-grpc-gen/js/pbjs_generated.json'),
    *   // Nodejs client
    *   grpcLib: require('@grpc/grpc-js'),
-   *   host: 'node0.testnet.rchain-dev.tk:40401',
+   *   host: 'localhost:40401',
    *   // Web client
    *   grpcLib: require('grpc-web'),
-   *   host: 'https://testnet-0.grpc.rchain.isotypic.com',
+   *   host: 'https://<grpc-web-host>:<port>',
    * }
    *
    * // Remote methods
@@ -120,34 +122,6 @@ declare module "@tgrospic/rnode-grpc-js" {
    * ```
    */
   export function rnodeService(opt: Options): DeployService & ProposeService & Repl
-
-  /**
-   * The private key for signing can be in different formats supported by
-   * [elliptic](https://github.com/indutny/elliptic#ecdsa) library.
-   * ```typescript
-   * // Generate new key pair
-   * const { ec } = require('elliptic')
-   * const secp256k1 = new ec('secp256k1')
-   * const key = secp256k1.genKeyPair()
-   *
-   * // Or use existing private key as hex string, Uint8Array, Buffer or ec.KeyPair
-   * const key = '1bf36a3d89c27ddef7955684b97667c75454317d8964528e57b2308947b250b0'
-   *
-   * const deployData = {
-   *   term: 'new out(`rho:io:stdout`) in { out!("Browser deploy test") }',
-   *   phloLimit: 10e3,
-   * }
-   *
-   * // Signed deploy with deployer, sig and sigAlgorithm fields populated
-   * const signed = signDeploy(key, deployData)
-   * ```
-   */
-  export function signDeploy(key: string | Uint8Array | Buffer | ec.KeyPair, deploy: UnsignedDeployData): DeployDataProto
-
-  /**
-   * Verifies deploy for a valid signature.
-   */
-  export function verifyDeploy(deploy: DeployDataProto): Boolean
 
   /**
    * Protobuf serialize / deserialize operations.
@@ -160,14 +134,6 @@ declare module "@tgrospic/rnode-grpc-js" {
 
   // TODO: add support to generate nested types
   interface WildcardMsg {}
-
-  interface UnsignedDeployData {
-    term: String
-    timestamp?: Number | Long
-    phlolimit: Number | Long
-    phloprice?: Number | Long
-    validafterblocknumber?: Number | Long
-  }
 
   /*__TYPES__*/
 

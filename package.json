@@ -1,17 +1,22 @@
 {
   "name": "@tgrospic/rnode-grpc-js",
-  "version": "0.8.5",
+  "version": "0.9.0",
   "description": "RNode gRPC helpers",
   "repository": "github:tgrospic/rnode-grpc-js",
   "author": "Tomislav Grospic",
   "license": "MIT",
   "main": "dist/index.js",
+  "types": "dist-types/index.d.ts",
   "scripts": {
-    "build": "babel src -d dist --copy-files",
-    "build:watch": "babel src -d dist --copy-files --watch --verbose",
+    "start": "run-p build:es5:w",
+    "build": "run-p build:es5 build:docs",
+    "build:es5": "tsc",
+    "build:es5:w": "tsc -w",
+    "build:docs": "typedoc src --tsconfig tsconfig.json --out dist-docs --excludePrivate --excludeProtected",
     "prepublishOnly": "npm-run-all clean build",
     "publish:public": "npm publish --access public",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist dist-module dist-types dist-docs",
+    "clean:all": "rimraf dist dist-module dist-types dist-docs node_modules"
   },
   "bin": {
     "rnode-grpc": "bin/rnode-grpc"
@@ -26,44 +31,36 @@
     "rholang"
   ],
   "dependencies": {
-    "@babel/runtime": "^7.9.6",
-    "base-58": "0.0.1",
-    "blakejs": "^1.1.0",
-    "core-js": "^3.6.5",
-    "elliptic": "^6.5.2",
-    "fs-extra": "^8.1.0",
+    "blakejs": "^1.1.1",
+    "bs58": "^4.0.1",
+    "elliptic": "^6.5.4",
+    "fs-extra": "^10.0.0",
+    "google-protobuf": "^3.19.1",
     "js-sha3": "^0.8.0",
-    "ramda": "^0.26.1",
+    "ramda": "^0.27.1",
     "request": "^2.88.2"
   },
   "devDependencies": {
-    "@babel/cli": "^7.8.4",
-    "@babel/core": "^7.9.6",
-    "@babel/plugin-transform-runtime": "^7.9.6",
-    "@babel/preset-env": "^7.9.6",
-    "grpc-tools": "^1.8.1",
+    "@types/bs58": "^4.0.1",
+    "@types/elliptic": "^6.4.14",
+    "@types/google-protobuf": "^3.15.5",
+    "@types/node": "^16.11.11",
+    "@types/ramda": "^0.27.58",
+    "grpc-tools": "^1.11.2",
     "npm-run-all": "^4.1.5",
-    "protobufjs": "^6.9.0",
-    "rimraf": "^3.0.2"
+    "protobufjs": "^6.11.2",
+    "rimraf": "^3.0.2",
+    "typedoc": "^0.22.10",
+    "typescript": "^4.5.2"
   },
   "peerDependencies": {
     "grpc-tools": "^1.8.0",
     "protobufjs": "^6.8.8"
   },
-  "babel": {
-    "presets": [
-      [
-        "@babel/preset-env",
-        {
-          "useBuiltIns": "usage",
-          "corejs": 3,
-          "shippedProposals": true
-        }
-      ]
-    ]
-  },
   "files": [
-    "dist"
+    "dist",
+    "dist-types",
+    "src"
   ],
   "engines": {
     "node": ">=6.0.0"
