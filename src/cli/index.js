@@ -53,7 +53,7 @@ export const run = async ({args, cwd}) => {
   // Input options
   const options = parseArgs(args)
   const {
-    'rnode-version': version='v0.9.12',
+    'rnode-version': version='v0.12.4',
     'gen-dir': genDirRel='rnode-grpc-gen',
     'include-reflection': includeReflection=false,
   } = options
