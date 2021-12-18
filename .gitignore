@@ -1,6 +1,8 @@
 node_modules
-dist/
 .cache/
 .gen
+dist/
+dist-types/
+dist-docs/
 
 rnode-grpc-gen/
