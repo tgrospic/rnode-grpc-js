@@ -1,10 +1,15 @@
 # RNode gRPC API generator
 
-This library helps to generate **JavaScript** bindings for **RNode gRPC** protocol.
+This library helps to generate **JavaScript** bindings for **RNode gRPC API**.
 
-Examples of how to use it with **Nodejs** and in the **browser** are in [@tgrospic/rnode-client-js](https://github.com/tgrospic/rnode-client-js) repo.
+Examples of how to use it with **Nodejs** and in the **browser** are in [@tgrospic/rnode-client-js](https://github.com/tgrospic/rnode-client-js) repository.
 
-Example of [Envoy configuration](https://github.com/grpc/grpc-web/blob/952d0f5869b315039a994011ecb5bf57dfdea999/net/grpc/gateway/examples/helloworld/envoy.yaml) to run your own _HTTP/gRPC_ proxy.
+RNode also exposes **HTTP** natively with **RNode Web API**, for more information see [@tgrospic/rnode-http-js](https://github.com/tgrospic/rnode-http-js).
+
+__Deploys sent via Web API still have to be serialized with protobuf, but it's not necessary to use this library and generate any JS code. [rnode-sign.ts](src/rnode-sign.ts) can be used independently in your web project.__
+
+_gRPC is not supported in the browser but it can be used with the proxy. Here is the example of [Envoy configuration](https://github.com/grpc/grpc-web/blob/952d0f5869b315039a994011ecb5bf57dfdea999/net/grpc/gateway/examples/helloworld/envoy.yaml) to run your own _HTTP/gRPC_ proxy._
+
 
 #### It contains two parts:
 - `rnode-grpc` CLI to generate JS files with **TypeScript definitions**
@@ -18,7 +23,7 @@ npm install @tgrospic/rnode-grpc-js
 # gRPC and protobuf for use with Nodejs
 # - compatible with native `grpc` package
 npm install google-protobuf @grpc/grpc-js
-# Or for use with the browser (via Envoy proxy)
+# Or for use in the browser (via Envoy proxy)
 npm install google-protobuf grpc-web
 
 # For crypto operations (create private key)
@@ -40,7 +45,7 @@ The purpose of `rnode-grpc` CLI command is to download and generate necessary fi
 rnode-grpc
 
 # Generate with specific options
-rnode-grpc --rnode-version v0.9.14 --gen-dir ./rnode-grpc-gen
+rnode-grpc --rnode-version v0.12.4 --gen-dir ./rnode-grpc-gen
 
 # Run from your project folder
 node_modules/.bin/rnode-grpc
@@ -49,10 +54,13 @@ node_modules/.bin/rnode-grpc
 
 | Option             | Default            | Description
 | -------------------| ------------------ | ------------
-| --rnode-version    | `v0.9.12`          | Version (repo tag) of RNode to generate API.
+| --rnode-version    | `v0.12.4`          | Version (repo tag) of RNode to generate API.
 | --gen-dir          | `./rnode-grpc-gen` | Path to output directory.
 
-We can generate API from not yet published RNode version. E.g. `dev` branch.
+<details>
+<summary>Additional use for RNode version option</summary>
+
+We can generate API from not yet published RNode version. From any branch on [rchain/rchain](https://github.com/rchain/rchain) repo, e.g. `dev` branch.
 
 ```sh
 rnode-grpc --rnode-version dev
@@ -66,12 +74,15 @@ interface DeployService {
   // ...existing methods
 }
 ```
+</details>
 
 ## API
 
-More info for client options for [@grpc/grpc-js](https://github.com/grpc/grpc-node/blob/b05caec/packages/grpc-js/src/client.ts#L67) and [grpc-web](https://github.com/grpc/grpc-web/blob/8b501a96f/javascript/net/grpc/web/grpcwebclientbase.js#L45).
+Complete API is combined from the part provided by the library and the generated part for a specific version of RNode.
 
-`@grpc/grpc-js` is a pure JS variant of `grpc` package, which can be also used in Nodejs.
+Documentation for library part can be found here [https://tgrospic.github.io/rnode-grpc-js/](https://tgrospic.github.io/rnode-grpc-js/) and generated part with TypeScript definitions can be found in a directory specified by `--gen-dir` option.
+
+More info for client options for [@grpc/grpc-js](https://github.com/grpc/grpc-node/blob/b05caec/packages/grpc-js/src/client.ts#L67) and [grpc-web](https://github.com/grpc/grpc-web/blob/8b501a96f/javascript/net/grpc/web/grpcwebclientbase.js#L45).
 
 ```typescript
 interface Options {
@@ -108,66 +119,74 @@ verifyDeploy(deploy: DeployDataProto): Boolean
 
 // Protobuf serialize / deserialize operations
 rnodeProtobuf({protoSchema}): TypesBinary
+
+// Transform Par type to JSON (with meaningful defaults)
+rhoParToJson(input: Par): any
 ```
 
 ### TypeScript definitions
 
-Here is an example of [TypeScript definition file](docs/rnode-grpc-js-v0.9.14.d.ts) generated for `v0.9.14` version of RNode.
+Here is an example of [TypeScript definition file](docs/rnode-grpc-js-v0.12.4.d.ts) generated for `v0.12.4` version of RNode.
 
 ```sh
 # Run CLI command with an option to specify RNode version (Git repo release tag)
-rnode-grpc --rnode-version v0.9.14
+rnode-grpc --rnode-version v0.12.4
 ```
-Generated TypeScript definitions are complete with the conversion of response errors inside the message to `Promise` errors. For RNode after `v0.9.14` version `ServiceError` type is converted and on previous versions the same conversion is done on a _dynamic_ `Either` type. :smile:
+_Generated TypeScript definitions are complete with the conversion of response errors inside the message to `Promise` errors. For RNode after `v0.9.14` version `ServiceError` type is converted and on previous versions the same conversion is done on a _dynamic_ `Either` type._ :smile:
 
 ```typescript
-// Typescipt generated interface from RNode v0.9.14 protbuf definitions
+// Typescipt generated interface from RNode v0.12.4 protbuf definitions
 interface DeployService {
-  DoDeploy(_?: DeployDataProto): Promise<DeployServiceResponse>
-  getBlock(_?: BlockQuery): Promise<BlockQueryResponse>
+  doDeploy(_?: DeployDataProto): Promise<DeployResponse>
+  getBlock(_?: BlockQuery): Promise<BlockResponse>
   visualizeDag(_?: VisualizeDagQuery): Promise<VisualizeBlocksResponse[]>
-  machineVerifiableDag(_?: MachineVerifyQuery): Promise<Unit>
-  showMainChain(_?: BlocksQuery): Promise<LightBlockInfo[]>
-  getBlocks(_?: BlocksQuery): Promise<LightBlockInfo[]>
+  machineVerifiableDag(_?: MachineVerifyQuery): Promise<MachineVerifyResponse>
+  showMainChain(_?: BlocksQuery): Promise<BlockInfoResponse[]>
+  getBlocks(_?: BlocksQuery): Promise<BlockInfoResponse[]>
   listenForDataAtName(_: DataAtNameQuery): Promise<ListeningNameDataResponse>
-  listenForContinuationAtName(_: ContinuationAtNameQuery): Promise<ListeningNameContinuationResponse>
-  findDeploy(_?: FindDeployQuery): Promise<LightBlockQueryResponse>
+  listenForContinuationAtName(_: ContinuationAtNameQuery): Promise<ContinuationAtNameResponse>
+  findDeploy(_?: FindDeployQuery): Promise<FindDeployResponse>
   previewPrivateNames(_?: PrivateNamePreviewQuery): Promise<PrivateNamePreviewResponse>
   lastFinalizedBlock(_?: LastFinalizedBlockQuery): Promise<LastFinalizedBlockResponse>
   isFinalized(_?: IsFinalizedQuery): Promise<IsFinalizedResponse>
+  bondStatus(_?: BondStatusQuery): Promise<BondStatusResponse>
+  exploratoryDeploy(_?: ExploratoryDeployQuery): Promise<ExploratoryDeployResponse>
+  getBlocksByHeights(_?: BlocksQueryByHeight): Promise<BlockInfoResponse[]>
+  getEventByHash(_?: ReportQuery): Promise<EventInfoResponse>
 }
 ```
 
-### Sample code for how to make requests to RNode in the browser
+## Sample code for gRPC requests to RNode
 
-Code assumes running Envoy proxy to convert gRPC to HTTP requests. At the bottom of the page is the [list of exposed proxies](#available-proxies-for-testnet) to RChain **testnet**.
+_NOTE: RNode also exposes **HTTP** natively with **RNode Web API**, for more information see [@tgrospic/rnode-http-js](https://github.com/tgrospic/rnode-http-js)._
 
-Working version of this example can be found here [@tgrospic/rnode-client-js/src/web/index.js](https://github.com/tgrospic/rnode-client-js/blob/master/src/web/index.js).
+Using gRPC in the browser is not supported but it's possible with gRPC-HTTP proxy and [grpc-web](https://github.com/grpc/grpc-web) library.
+
+Working version of these examples can be found in [@tgrospic/rnode-client-js/src/nodejs](https://github.com/tgrospic/rnode-client-js/tree/master/src/nodejs).
 
 ```typescript
 /// <reference path="../rnode-grpc-gen/js/rnode-grpc-js.d.ts" />
-import grpcWeb from 'grpc-web'
+import grpcLib from '@grpc/grpc-js'
+// import grpcLib from 'grpc-web' // when using gRPC-HTTP proxy
 import { ec } from 'elliptic'
 import { rnodeDeploy, rnodePropose, signDeploy, verifyDeploy, LightBlockInfo } from '@tgrospic/rnode-grpc-js'
 
 // Generated files with rnode-grpc-js tool
 import protoSchema from '../rnode-grpc-gen/js/pbjs_generated.json'
-// <= v0.9.14 RNode - import generated protobuf types (in global scope)
-import '../rnode-grpc-gen/js/DeployService_pb'
-import '../rnode-grpc-gen/js/ProposeService_pb'
-// > v0.9.14 RNode - import generated protobuf types (in global scope)
+// Import generated protobuf types (in global scope)
 import '../rnode-grpc-gen/js/DeployServiceV1_pb'
 import '../rnode-grpc-gen/js/ProposeServiceV1_pb'
 
 // RNode validator address (or any read-only RNode if we don't use _deploy_ and _propose_)
-const rnodeExternalUrl = 'https://testnet-0.grpc.rchain.isotypic.com'
+const rnodeExternalUrl = 'node2.testnet.rchain.coop:40401'
+// const rnodeExternalUrl = 'https://<host>:<port>' // when using gRPC-HTTP proxy
 
-// Instantiate http clients
-const options = { grpcLib: grpcWeb, host: rnodeExternalUrl, protoSchema }
+// gRPC client options
+const options = { grpcLib: grpcLib, host: rnodeExternalUrl, protoSchema }
 
 // Get RNode service methods
 const { getBlocks, DoDeploy } = rnodeDeploy(options)
-const { propose } = rnodePropose(options)
+const { propose }             = rnodePropose(options)
 
 // Get blocks from RNode
 const blocks: LightBlockInfo[] = await getBlocks({ depth: 2 })
@@ -181,7 +200,10 @@ const key = secp256k1.genKeyPair()
 // Sample Rholang code we want to deploy
 const deployData = {
   term: 'new out(`rho:io:stdout`) in { out!("Browser deploy test") }',
-  phlolimit: 10e3,
+  timestamp: Date.now(),      // nonce
+  phloprice: 1,               // price of tinny REV for phlogiston (gas)
+  phlolimit: 10e3,            // max phlogiston (gas) for deploy execution
+  validafterblocknumber: 123, // latest block number
 }
 
 // Helper function to sign a deploy
@@ -195,8 +217,14 @@ const isValidDeploy = verifyDeploy(deploy)
 const { message } = await DoDeploy(deploy)
 
 // Propose deploys to the rest of the network
-// - this is usualy done by the validator, on testnet this can be allowed
+// - this is done by the validator and allowed only on internal (private) port
 await propose()
+
+// Get result from deploy (after deploy is added to a block)
+const { payload: { blockinfoList } } = await listenForDataAtName({
+  depth: 1,
+  name: { unforgeablesList: [{gDeployIdBody: { sig: deploy.sig }}] },
+})
 ```
 #### Protobuf serialize and deserialize operations
 
@@ -204,8 +232,8 @@ await propose()
 /// <reference path="../rnode-grpc-gen/js/rnode-grpc-js.d.ts" />
 // Generated protobuf files must be loaded to instantiate a global proto object
 // needed for `rnodeProtobuf`
-require('../rnode-grpc-gen/js/DeployService_pb')
-require('../rnode-grpc-gen/js/ProposeService_pb')
+require('../rnode-grpc-gen/js/DeployServiceV1_pb')
+require('../rnode-grpc-gen/js/ProposeServiceV1_pb')
 require('../rnode-grpc-gen/js/repl_pb')
 const protoSchema = require('../rnode-grpc-gen/js/pbjs_generated.json')
 
