@@ -17,13 +17,10 @@ const blue = txt => `\u001b[34m${txt}\u001b[0m`
 
 const ext = process.platform === 'win32' ? '.cmd' : ''
 
-// Resolve npm bin folder in the top project
-// <project>/node_modules/@tgrospic/rnode-grpc-js/dist/cli
-const npmBin = path.resolve(__dirname, '../../../../.bin')
-// DEV: Path to npm .bin directory in development `npm link ../rnode-grpc-js`
-// const npmBin = path.resolve(__dirname, '../../node_modules/.bin')
-
-const generateJsPb = async ({jsPath, protoPath, protoFiles}) => {
+/**
+ * Generate JS bindings with native `grpc-tools` library.
+ */
+const generateJsPb = async ({jsPath, protoPath, protoFiles, npmBin}) => {
   const protoc = path.resolve(npmBin, `grpc_tools_node_protoc${ext}`)
   const args = [
     `--js_out=import_style=commonjs:${jsPath}`,
@@ -35,7 +32,10 @@ const generateJsPb = async ({jsPath, protoPath, protoFiles}) => {
   return waitExit(protocExe, null, `Failed to generate JS files with grpc-tools.`)
 }
 
-const generateJsonPb = async ({jsPath, protoFiles}) => {
+/**
+ * Generate JSON representation of protobuf types with `protobufjs` library.
+ */
+const generateJsonPb = async ({jsPath, protoFiles, npmBin}) => {
   const pbjs = path.resolve(npmBin, `pbjs${ext}`)
   const jsonPath = `${jsPath}/pbjs_generated.json`
   const args = [
@@ -49,7 +49,15 @@ const generateJsonPb = async ({jsPath, protoFiles}) => {
   return waitExit(pbExe, jsonPath, `Failed to generate JSON schema with pbjs.`)
 }
 
-export const run = async ({args, cwd}) => {
+/**
+ * Run RChain client gRPC/protobuf API generator.
+ *
+ * - download protobuf definition files from GitHub rchain/rchain
+ * - generate JS bindings (grpc-tools)
+ * - generate JSON schema (protobufjs)
+ * - generate TypeScript definitions
+ */
+export const run = async ({args, cwd, npmBin}) => {
   // Input options
   const options = parseArgs(args)
   const {
@@ -115,10 +123,10 @@ export const run = async ({args, cwd}) => {
   const protoFiles = R.map(R.prop('filePath'), protoDownloads)
 
   // Generate JS code from proto files (with grpc-tools)
-  await generateJsPb({jsPath, protoPath, protoFiles})
+  await generateJsPb({jsPath, protoPath, protoFiles, npmBin})
 
   // Generate JSON definition from proto files (with protobufjs)
-  const jsonPath = await generateJsonPb({jsPath, protoFiles})
+  const jsonPath = await generateJsonPb({jsPath, protoFiles, npmBin})
 
   // Load generated pbjs JSON schema
   const protoSchema = require(jsonPath)
