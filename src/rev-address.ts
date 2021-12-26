@@ -4,17 +4,19 @@ import { ec } from 'elliptic'
 import { decodeBase16, encodeBase58, encodeBase16, decodeBase58safe } from './codecs'
 
 /**
- * Represents different formats of REV address
+ * Represents REV address with different _sources_.
+ *
+ * REV address is derived from private key but not directly.
+ * Public key is derived from private key, ETH address is derived from public key and
+ * REV address is derived from ETH address.
+ *
+ * Private key -> public key -> ETH address -> REV address.
  */
 export interface RevAddress {
   revAddr: string
   ethAddr?: string
   pubKey?: string
   privKey?: string
-}
-
-export interface RevAccount extends RevAddress {
-  name: string
 }
 
 const secp256k1 = new ec('secp256k1')
@@ -26,7 +28,7 @@ const secp256k1 = new ec('secp256k1')
 const prefix = { coinId : "000000", version: "00" }
 
 /**
- * Get REV address from ETH address.
+ * Parses REV address from ETH address.
  */
 export function getAddrFromEth(ethAddrRaw: string): string | undefined {
   const ethAddr = ethAddrRaw.replace(/^0x/, '')
@@ -46,7 +48,7 @@ export function getAddrFromEth(ethAddrRaw: string): string | undefined {
 }
 
 /**
- * Get REV address (with ETH address) from public key.
+ * Parses REV address (with ETH address) from public key.
  */
 export function getAddrFromPublicKey(publicKeyRaw: string): RevAddress | undefined {
   const publicKey = publicKeyRaw.replace(/^0x/, '')
@@ -65,7 +67,7 @@ export function getAddrFromPublicKey(publicKeyRaw: string): RevAddress | undefin
 }
 
 /**
- * Get REV address (with ETH address and public key) from private key.
+ * Parses REV address (with ETH address and public key) from private key.
  */
 export function getAddrFromPrivateKey(privateKeyRaw: string): RevAddress | undefined {
   const privateKey = privateKeyRaw.replace(/^0x/, '')
@@ -81,7 +83,7 @@ export function getAddrFromPrivateKey(privateKeyRaw: string): RevAddress | undef
 }
 
 /**
- * Verify REV address
+ * Verifes REV address as hex string.
  */
 export function verifyRevAddr(revAddr: string): boolean {
   const revBytes = decodeBase58safe(revAddr)
@@ -99,23 +101,23 @@ export function verifyRevAddr(revAddr: string): boolean {
 }
 
 /**
- * Generates new private and public key, ETH and REV address.
+ * Generates a new REV address with corresponding private, public key and ETH address.
  */
-export function newRevAccount(): RevAddress {
+export function newRevAddress(): RevAddress {
   // Generate new key and REV address from it
   const key     = secp256k1.genKeyPair()
   const privKey = key.getPrivate('hex')
   const addr    = getAddrFromPrivateKey(privKey) as RevAddress
 
-  // Return public key, REV and ETH address
+  // Return private, public key, REV and ETH address
   return { privKey, ...addr }
 }
 
 /**
- * Creates REV address from different formats
+ * Parses REV address from different sources in string hex format.
  * (private key -> public key -> ETH address -> REV address)
  */
-export function createRevAccount(text: string): RevAddress | undefined {
+export function parseRevAddress(text: string): RevAddress | undefined {
   const val = text.replace(/^0x/, '').trim()
 
   // Account from private key, public key, ETH or REV address
