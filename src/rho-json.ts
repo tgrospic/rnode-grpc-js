@@ -17,14 +17,12 @@
   * [ [ true, 'A', 'B' ] ]   // return!((true, "A", "B"))
   * [ true, 'A', 'B' ]       // return!(true, "A", "B")
   * [ true, 'A' ]            // return!(true) | return!("A")
-  * // NOTE: primitive types with default values are converted to `null`
-  * //       because they are not serialized in protobuf message.
-  * //       https://github.com/rchain/rchain/issues/3566
-  * [ [ null, null, null ] ] // return!((false, 0, ""))
   * ```
   */
 // TODO: make it stack safe
 export const rhoParToJson = (input: Par): any => {
+  if (input === void 666 || input === null) return input
+
   if (!!input.exprsList?.length) {
     const vals = input.exprsList.map(rhoExprToJson)
     return vals.length === 1 ? vals[0] : vals
@@ -32,7 +30,9 @@ export const rhoParToJson = (input: Par): any => {
     const vals = input.unforgeablesList.map(rhoUnforgeableToJson)
     return vals.length === 1 ? vals[0] : vals
   } else {
-    return null
+    // For all other types of fields return undefined
+    // (not obvious representation in JSON)
+    return void 666
   }
 }
 
@@ -46,43 +46,48 @@ const rhoExprToJson = (x: Expr): any => {
     return x.eTupleBody.psList?.map(rhoParToJson)
   } else if (x.eMapBody !== void 666) {
     return x.eMapBody.kvsList?.reduce((acc, { key, value }) => {
-      const k = rhoParToJson(key)
+      // Get key from Par
+      const kRaw = rhoParToJson(key)
+      // Convert binary key to hex string
+      const k = kRaw instanceof Uint8Array ? uint8ArrayToHex(kRaw) : kRaw
+      // Get value from Par
       const v = rhoParToJson(value)
-      return { ...acc, [k]: v }
+      // Skip key if undefined (not obvious representation in JSON)
+      return k === void 666 || k === null ? acc : { ...acc, [k]: v }
     }, {})
   // Only non-default primitives can be deserialized
-  } else if (x.gBool !== false) {
+  } else if (x.gBool !== void 666) {
     return x.gBool
-  } else if (x.gInt !== 0) {
+  } else if (x.gInt !== void 666) {
     return x.gInt
-  } else if (x.gString !== '') {
+  } else if (x.gString !== void 666) {
     return x.gString
-  } else if (x.gUri !== '') {
+  } else if (x.gUri !== void 666) {
     return x.gUri
-  } else if (x.gByteArray?.length !== 0) {
-    return uint8ArrayToHex(x.gByteArray!)
+  } else if (x.gByteArray !== void 666) {
+    return base64ToUint8Array(x.gByteArray! as any)
   } else {
-    // If no complex object is set and if all primitives are equal to
-    // default there is no way to know what field is serialized,
-    // so `null` have meaning of default primitive value.
-    return null
+    // For all other types of fields return undefined
+    // (not obvious representation in JSON)
+    return void 666
   }
 }
 
 const rhoUnforgeableToJson = (x: GUnforgeable): any => {
   if (x.gDeployIdBody !== void 666) {
-    return uint8ArrayToHex(x.gDeployIdBody.sig!)
+    return base64ToUint8Array(x.gDeployIdBody.sig! as any)
   } else if (x.gDeployerIdBody !== void 666) {
-    return uint8ArrayToHex(x.gDeployerIdBody.publickey!)
+    return base64ToUint8Array(x.gDeployerIdBody.publickey! as any)
   } else if (x.gPrivateBody !== void 666) {
-    return uint8ArrayToHex(x.gPrivateBody.id!)
-  } else {
-    return null
+    return base64ToUint8Array(x.gPrivateBody.id! as any)
   }
 }
 
 const uint8ArrayToHex = (x: Uint8Array) =>
   Buffer.from(x).toString('hex')
+
+const base64ToUint8Array = (x: string) =>
+  Uint8Array.from(Buffer.from(x, 'base64'))
 
 /**
   * Types copied from generated JS code from protobuf
@@ -95,10 +100,6 @@ export interface Par {
 }
 
 export interface Expr {
-  // Primitive types
-  // NOTE: Protobuf 3 doesn't serialize default values, so no way
-  //       to check which field contains the value if set to default!
-  // https://github.com/rchain/rchain/issues/3566
   readonly gBool?: boolean
   readonly gInt?: number
   readonly gString?: string

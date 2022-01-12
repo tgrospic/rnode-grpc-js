@@ -128,6 +128,9 @@ export const run = async ({args, cwd, npmBin}) => {
   // Generate JSON definition from proto files (with protobufjs)
   const jsonPath = await generateJsonPb({jsPath, protoFiles, npmBin})
 
+  // Append fix to Expr type primitive fields
+  await addFixExprPrimitiveFields(jsPath)
+
   // Load generated pbjs JSON schema
   const protoSchema = require(jsonPath)
 
@@ -135,4 +138,54 @@ export const run = async ({args, cwd, npmBin}) => {
 
   // Generate TypeScript definitions
   await generateTs({jsPath, protoPath, protoSchema, version})
+}
+
+/**
+ * Fix for primitive fields in Expr type.
+ * https://github.com/rchain/rchain/issues/3566
+ *
+ * RNode uses protobuf v3 format which doesn't serialize default values for primitive types.
+ * RNode overrides this behavior for Rholang types, so fields with primitive values are
+ * always serialized, even containing default values.
+ * JS generated code with grpc-tools will set default values for not serialized fields which
+ * makes it impossible to detect in Expr type which field is really set.
+ * This fix detects non-serialized fields of Expr type and sets them to undefined.
+ */
+async function addFixExprPrimitiveFields(jsPath) {
+  const rhoTypesJs = path.resolve(jsPath, `RhoTypes_pb.js`)
+
+  const patch = `\n
+/**
+ * Fix for primitive fields in Expr type.
+ * https://github.com/rchain/rchain/issues/3566
+ *
+ * RNode uses protobuf v3 format which doesn't serialize default values for primitive types.
+ * RNode overrides this behavior for Rholang types, so fields with primitive values are
+ * always serialized, even containing default values.
+ * JS generated code with grpc-tools will set default values for not serialized fields which
+ * makes it impossible to detect in Expr type which field is really set.
+ * This fix detects non-serialized fields of Expr type and sets them to undefined.
+ */
+const originExprToObject = proto.Expr.toObject
+
+const patchFields = [
+  ['gBool'     ,  1],
+  ['gInt'      ,  2],
+  ['gString'   ,  3],
+  ['gUri'      ,  4],
+  ['gByteArray', 25],
+]
+
+function deleteFieldIfEmpty(msg, exprObj, name, fieldNr) {
+  const v = jspb.Message.getField(msg, fieldNr)
+  if (v === void 666 || v === null) exprObj[name] = void 666
+}
+
+proto.Expr.toObject = function(includeInstance, msg) {
+  const expr = originExprToObject.call(includeInstance, includeInstance, msg)
+  patchFields.forEach(([name, pos]) => deleteFieldIfEmpty(msg, expr, name, pos))
+  return expr
+}
+`
+  await fs.appendFile(rhoTypesJs, patch, 'utf8')
 }
