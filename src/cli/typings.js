@@ -59,11 +59,18 @@ const getTsType = protoType => R.find(x => x.proto === protoType, protoTsTypesMa
 
 // Generates service method
 const methodCodeGen = getType => ([name, {requestType, responseType, responseStream}]) => {
-  const {fields} = getType(requestType)
-  const isSimpleType = ({type}) => getTsType(type)
-  const nullable = R.all(isSimpleType, Object.values(fields || {})) ? '?' : ''
+  // Empty method arguments for Google Protobuf Empty type
+  const methodArg = requestType == 'google.protobuf.Empty'
+    ? () => '()'
+    : () => {
+      const {fields} = getType(requestType)
+      const isSimpleType = ({type}) => getTsType(type)
+      const nullable = R.all(isSimpleType, Object.values(fields || {})) ? '?' : ''
+      return `(_${nullable}: ${requestType})`
+    }
   const suffix = responseStream ? '[]' : ''
-  return `${name}(_${nullable}: ${requestType}): Promise<${responseType || 'Unit'}${suffix}>`
+
+  return `${name}${methodArg()}: Promise<${responseType || 'Unit'}${suffix}>`
 }
 
 // Generates code for service interface
