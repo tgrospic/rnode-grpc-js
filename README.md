@@ -179,6 +179,7 @@ import '../rnode-grpc-gen/js/ProposeServiceV1_pb'
 
 // RNode validator address (or any read-only RNode if we don't use _deploy_ and _propose_)
 const rnodeExternalUrl = 'node2.testnet.rchain.coop:40401'
+// const rnodeInternalUrl = 'localhost:40402'
 // const rnodeExternalUrl = 'https://<host>:<port>' // when using gRPC-HTTP proxy
 
 // gRPC client options
@@ -226,7 +227,9 @@ const { payload: { blockinfoList } } = await listenForDataAtName({
   name: { unforgeablesList: [{gDeployIdBody: { sig: deploy.sig }}] },
 })
 ```
-#### Protobuf serialize and deserialize operations
+### Protobuf serialize and deserialize operations
+
+The small wrapper `rnodeProtobuf` allows easier access to protobuf generated types and serialize/deserialize operations.
 
 ```typescript
 /// <reference path="../rnode-grpc-gen/js/rnode-grpc-js.d.ts" />

@@ -149,7 +149,8 @@ export const run = async ({args, cwd, npmBin}) => {
  * always serialized, even containing default values.
  * JS generated code with grpc-tools will set default values for not serialized fields which
  * makes it impossible to detect in Expr type which field is really set.
- * This fix detects non-serialized fields of Expr type and sets them to undefined.
+ * This fix overrides `toObject` generated function with detection of non-serialized fields
+ * of Expr type and sets them to undefined.
  */
 async function addFixExprPrimitiveFields(jsPath) {
   const rhoTypesJs = path.resolve(jsPath, `RhoTypes_pb.js`)
