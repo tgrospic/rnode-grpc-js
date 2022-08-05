@@ -16,6 +16,7 @@ export interface UnsignedDeployData {
   readonly phlolimit: number
   readonly phloprice: number
   readonly validafterblocknumber: number
+  readonly shardid: string
 }
 
 /**
@@ -28,6 +29,7 @@ export interface DeploySignedProto {
   readonly phlolimit: number
   readonly phloprice: number
   readonly validafterblocknumber: number
+  readonly shardid: string
   readonly sigalgorithm: string
   readonly deployer: Uint8Array
   readonly sig: Uint8Array
@@ -56,6 +58,7 @@ export interface DeploySignedProto {
   *   phloprice: 1,               // price of tinny REV for phlogiston (gas)
   *   phlolimit: 10e3,            // max phlogiston (gas) for deploy execution
   *   validafterblocknumber: 123, // latest block number
+  *   shardid: 'testnet',         // shard name
   * }
   *
   * // Signed deploy with deployer, sig and sigalgorithm fields populated
@@ -64,7 +67,7 @@ export interface DeploySignedProto {
   */
 export const signDeploy = function (privateKey: ec.KeyPair | string, deployObj: UnsignedDeployData): DeploySignedProto {
   const {
-    term, timestamp, phlolimit, phloprice, validafterblocknumber,
+    term, timestamp, phlolimit, phloprice, validafterblocknumber, shardid,
   } = deployObj
 
   // Currently supported algorithm
@@ -72,7 +75,7 @@ export const signDeploy = function (privateKey: ec.KeyPair | string, deployObj: 
 
   // Serialize deploy data for signing
   const deploySerialized = deployDataProtobufSerialize({
-    term, timestamp, phlolimit, phloprice, validafterblocknumber,
+    term, timestamp, phlolimit, phloprice, validafterblocknumber, shardid,
   })
 
   // Signing key
@@ -86,7 +89,7 @@ export const signDeploy = function (privateKey: ec.KeyPair | string, deployObj: 
 
   // Return deploy object / ready for sending to RNode
   return {
-    term, timestamp, phlolimit, phloprice, validafterblocknumber,
+    term, timestamp, phlolimit, phloprice, validafterblocknumber, shardid,
     sigalgorithm, deployer, sig,
   }
 }
@@ -96,13 +99,13 @@ export const signDeploy = function (privateKey: ec.KeyPair | string, deployObj: 
   */
 export const verifyDeploy = (deployObj: DeploySignedProto) => {
   const {
-    term, timestamp, phlolimit, phloprice, validafterblocknumber,
+    term, timestamp, phlolimit, phloprice, validafterblocknumber, shardid,
     sigalgorithm, deployer, sig,
   } = deployObj
 
   // Serialize deploy data for signing
   const deploySerialized = deployDataProtobufSerialize({
-    term, timestamp, phlolimit, phloprice, validafterblocknumber,
+    term, timestamp, phlolimit, phloprice, validafterblocknumber, shardid,
   })
 
   // Signing public key to verify
@@ -119,7 +122,7 @@ export const verifyDeploy = (deployObj: DeploySignedProto) => {
  * Serialization of DeployDataProto object without generated JS code.
  */
 export const deployDataProtobufSerialize = (deployData: UnsignedDeployData) => {
-  const {term, timestamp, phlolimit, phloprice, validafterblocknumber, } = deployData
+  const {term, timestamp, phlolimit, phloprice, validafterblocknumber, shardid} = deployData
 
   // Create binary stream writer
   const writer = new jspb.BinaryWriter()
@@ -127,16 +130,17 @@ export const deployDataProtobufSerialize = (deployData: UnsignedDeployData) => {
   const writeString = (order: number, val: string) => val != "" && writer.writeString(order, val)
   const writeInt64  = (order: number, val: number) => val != 0  && writer.writeInt64(order, val)
 
-  // https://github.com/rchain/rchain/blob/f7e46a9/models/src/main/protobuf/CasperMessage.proto#L134-L143
+  // https://github.com/rchain/rchain/blob/ebe4d476371/models/src/main/protobuf/CasperMessage.proto#L134-L149
   // message DeployDataProto {
-  //   bytes  deployer     = 1; //public key
-  //   string term         = 2; //rholang source code to deploy (will be parsed into `Par`)
-  //   int64  timestamp    = 3; //millisecond timestamp
-  //   bytes  sig          = 4; //signature of (hash(term) + timestamp) using private key
-  //   string sigAlgorithm = 5; //name of the algorithm used to sign
-  //   int64 phloPrice     = 7; //phlo price
-  //   int64 phloLimit     = 8; //phlo limit for the deployment
+  //   bytes  deployer             = 1; //public key
+  //   string term                 = 2; //rholang source code to deploy (will be parsed into `Par`)
+  //   int64  timestamp            = 3; //millisecond timestamp
+  //   bytes  sig                  = 4; //signature of (hash(term) + timestamp) using private key
+  //   string sigAlgorithm         = 5; //name of the algorithm used to sign
+  //   int64 phloPrice             = 7; //phlo price
+  //   int64 phloLimit             = 8; //phlo limit for the deployment
   //   int64 validAfterBlockNumber = 10;
+  //   string shardId              = 11;//shard ID to prevent replay of deploys between shards
   // }
 
   // Serialize fields
@@ -145,6 +149,7 @@ export const deployDataProtobufSerialize = (deployData: UnsignedDeployData) => {
   writeInt64(7, phloprice)
   writeInt64(8, phlolimit)
   writeInt64(10, validafterblocknumber)
+  writeString(11, shardid)
 
   return writer.getResultBuffer()
 }
