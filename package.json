@@ -1,6 +1,6 @@
 {
   "name": "@tgrospic/rnode-grpc-js",
-  "version": "0.10.1",
+  "version": "0.11.0",
   "description": "RNode gRPC helpers",
   "repository": "github:tgrospic/rnode-grpc-js",
   "author": "Tomislav Grospic",
